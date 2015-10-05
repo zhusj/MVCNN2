@@ -1,0 +1,17 @@
+(28-Sep-2015 12:26:18) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone
+	layer: relu7
+	multiview: true (avgsvmscore)
+	accuracy (train): 99.6256%
+	accuracy (test): 88.5%
+(28-Sep-2015 12:59:09) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone
+	layer: relu7
+	method: avgmindist
+	mAP: 61.4912%
+	AUC: 60.7504%
+	mAP (interpolated): 62.4057%
+	AUC (interpolated): 62.4057%

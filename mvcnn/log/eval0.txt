@@ -100,3 +100,122 @@
 	AUC: 67.4131%
 	mAP (interpolated): 69.0095%
 	AUC (interpolated): 69.0095%
+(05-Oct-2015 16:09:11) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_0.5_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 90%
+(05-Oct-2015 16:09:30) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_0.5_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 69.0168%
+	AUC: 68.3108%
+	mAP (interpolated): 69.8973%
+	AUC (interpolated): 69.8973%
+(05-Oct-2015 17:45:23) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_2_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 89.125%
+(05-Oct-2015 17:45:40) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_2_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 66.2408%
+	AUC: 65.4703%
+	mAP (interpolated): 67.1435%
+	AUC (interpolated): 67.1435%
+(05-Oct-2015 19:29:08) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_decay_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 89.875%
+(05-Oct-2015 19:29:25) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_decay_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 69.1726%
+	AUC: 68.4771%
+	mAP (interpolated): 70.0413%
+	AUC (interpolated): 70.0413%
+(06-Oct-2015 11:38:29) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_decay1_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 90%
+(06-Oct-2015 11:38:47) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_decay1_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 68.1067%
+	AUC: 67.3751%
+	mAP (interpolated): 68.9771%
+	AUC (interpolated): 68.9771%
+(06-Oct-2015 13:24:10) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_1_no_decay_leaky0.2_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 88.375%
+(06-Oct-2015 13:24:27) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_1_no_decay_leaky0.2_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 56.8341%
+	AUC: 56.0009%
+	mAP (interpolated): 57.6596%
+	AUC (interpolated): 57.6596%
+(06-Oct-2015 15:03:20) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_1_no_decay_leaky0.01_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 90.5%
+(06-Oct-2015 15:03:37) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_1_no_decay_leaky0.01_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 67.5743%
+	AUC: 66.8412%
+	mAP (interpolated): 68.4496%
+	AUC (interpolated): 68.4496%
+(06-Oct-2015 18:41:56) -- Classification
+	c: 0.0625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_1_no_decay_no_leak_no_val_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.7172%
+	accuracy (test): 90%
+(06-Oct-2015 18:42:13) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_softmax_seperate_1_no_decay_no_leak_no_val_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 68.2666%
+	AUC: 67.5255%
+	mAP (interpolated): 69.1561%
+	AUC (interpolated): 69.1561%

@@ -111,7 +111,11 @@ info.val.speed = [] ;
 
 lr = 0 ;
 res = [] ;
-for epoch=1:opts.numEpochs  
+for epoch=1:opts.numEpochs
+  %%%%%%%%%%%%%%%%%%
+  net.epoch = epoch;
+  net.numEpochs = opts.numEpochs;
+  %%%%%%%%%%%%%%%%%%
   prevLr = lr ;
   lr = opts.learningRate(min(epoch, numel(opts.learningRate))) ;
 

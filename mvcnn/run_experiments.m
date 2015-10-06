@@ -119,7 +119,7 @@ for i=1:length(ex),
     if isfield(ex(i),'trainOpts') && ~skipTrain, 
         trainOpts = ex(i).trainOpts;
 %         prefix = sprintf('BS%d_AUG%s', trainOpts.batchSize, trainOpts.aug);
-        prefix = 'pose_add_softmax_seperate';
+        prefix = 'pose_add_softmax_seperate_no_decay_no_leak_with_val_l2norm';
         if isfield(trainOpts,'multiview') && trainOpts.multiview, 
             prefix = sprintf('%s_MV%s',prefix,trainOpts.viewpoolLoc);
         end

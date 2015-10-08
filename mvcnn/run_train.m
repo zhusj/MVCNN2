@@ -57,6 +57,7 @@ opts.includeVal = false;
 opts.useUprightAssumption = true;
 opts.addBranch = false;
 opts.addSupervision = false;
+opts.addfc = false;
 
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -189,7 +190,6 @@ if opts.addSupervision,
     opts.weightDecay = 1;
     initBias= 0.1;
     % net = add_block(net, opts, 9, 1, 1, 4096, 60, 1, 0, 0.1); 
-    horzcat
 
     new_fc_layer = struct('type', 'conv', 'name', 'fc_p', ...
                                'weights', {{0.01/opts.scale * randn(1, 1, 256, 60, 'single'), ...
@@ -201,6 +201,30 @@ if opts.addSupervision,
     % net.layers{end+1} = struct('type', 'relu', 'name', 'relu_p') ;
     new_softmaxloss = struct('type', 'softmaxloss', 'name', 'loss') ;
     net.layers = horzcat(net.layers(1:13),new_fc_layer,new_softmaxloss,net.layers(14:end));
+end
+
+if opts.addfc,
+    opts.scale = 1;
+    opts.weightDecay = 1;
+    opts.initBias= 0.1;
+    new_net.layers ={};
+    new_net = add_block(new_net, opts, '9', 1, 1, 4096, 4096, 1, 0,0.1) ;
+    new_net.layers{end+1} = struct('type', 'dropout', ...
+                                'name', sprintf('dropout%s', '_n'), ...
+                                'rate', 0.5) ;
+    net.layers = horzcat(net.layers(1:18), ...
+                            new_net.layers, ...
+                            net.layers(19:end)); 
+%     new_fc_layer = net.layers(19);
+%     new_fc_layer{1}.name = 'fc_n';
+%     new_relu_layer = net.layers(20);
+%     new_relu_layer{1}.name = 'relu_n';
+%     dropoutLayer = struct('type', 'dropout', 'rate', 0.5, 'name','dropout') ;
+%     net.layers = horzcat(net.layers(1:18), ...
+%                             new_fc_layer, ...
+%                             new_relu_layer, ...
+%                             dropoutLayer, ...
+%                             net.layers(19:end)); 
 end
 
 % -------------------------------------------------------------------------

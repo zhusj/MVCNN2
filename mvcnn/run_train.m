@@ -58,6 +58,7 @@ opts.useUprightAssumption = true;
 opts.addBranch = false;
 opts.addSupervision = false;
 opts.addfc = false;
+opts.addDropout = true;
 
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -208,7 +209,8 @@ if opts.addfc,
     opts.weightDecay = 1;
     opts.initBias= 0.1;
     new_net.layers ={};
-    new_net = add_block(new_net, opts, '9', 1, 1, 4096, 4096, 1, 0,0.1) ;
+    new_net = add_block(new_net, opts, 9, 1, 1, 4096, 4096, 1, 0,0.1) ;
+    new_net.layers{end-1}.learningRate = [10 20];
     new_net.layers{end+1} = struct('type', 'dropout', ...
                                 'name', sprintf('dropout%s', '_n'), ...
                                 'rate', 0.5) ;

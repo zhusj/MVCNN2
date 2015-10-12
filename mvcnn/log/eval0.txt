@@ -304,3 +304,105 @@
 	AUC: 46.3297%
 	mAP (interpolated): 47.9963%
 	AUC (interpolated): 47.9963%
+(08-Oct-2015 17:09:57) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_correct_softmax_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 89.875%
+(08-Oct-2015 17:10:16) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_correct_softmax_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 68.8364%
+	AUC: 68.1156%
+	mAP (interpolated): 69.7067%
+	AUC (interpolated): 69.7067%
+(09-Oct-2015 13:32:39) -- Classification
+	c: 0.0625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_correct_softmax_replace_vp_with_fc
+	layer: relu7
+	multiview: true (avgsdesc)
+	accuracy (train): 99.5052%
+	accuracy (test): 84.3646%
+(09-Oct-2015 13:33:02) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_correct_softmax_replace_vp_with_fc
+	layer: relu7
+	method: avgdesc
+	mAP: 63.7907%
+	AUC: 62.9543%
+	mAP (interpolated): 64.8817%
+	AUC (interpolated): 64.8817%
+(09-Oct-2015 23:59:54) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v2
+	model: imagenet-vgg-m-finetuned-ModelNet40v2-BS80_AUGnone-finetuned-ModelNet40v2-pose_add_correct_softmax_80_views_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 89.5%
+(10-Oct-2015 00:00:10) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v2
+	model: imagenet-vgg-m-finetuned-ModelNet40v2-BS80_AUGnone-finetuned-ModelNet40v2-pose_add_correct_softmax_80_views_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 68.783%
+	AUC: 68.0532%
+	mAP (interpolated): 69.788%
+	AUC (interpolated): 69.788%
+(11-Oct-2015 03:46:38) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v2
+	model: imagenet-vgg-m-finetuned-ModelNet40v2-BS80_AUGnone-finetuned-ModelNet40v2-pose_add_correct_softmax_80_views_15_epochs_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 89.375%
+(11-Oct-2015 03:46:55) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v2
+	model: imagenet-vgg-m-finetuned-ModelNet40v2-BS80_AUGnone-finetuned-ModelNet40v2-pose_add_correct_softmax_80_views_15_epochs_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 68.7779%
+	AUC: 68.0585%
+	mAP (interpolated): 69.7686%
+	AUC (interpolated): 69.7686%
+(12-Oct-2015 12:59:36) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_correct_softmax_12_views_10_epochs_add_dropot_fc6_fc7_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 90.25%
+(12-Oct-2015 12:59:53) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_correct_softmax_12_views_10_epochs_add_dropot_fc6_fc7_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 68.7365%
+	AUC: 68.0127%
+	mAP (interpolated): 69.6144%
+	AUC (interpolated): 69.6144%
+(12-Oct-2015 16:04:29) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_correct_softmax_12_views_10_epochs_add_dropot_fc6_fc7_feature_fusion_fc6+fc7_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 96.4813%
+	accuracy (test): 84.625%
+(12-Oct-2015 16:04:46) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_correct_softmax_12_views_10_epochs_add_dropot_fc6_fc7_feature_fusion_fc6+fc7_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 75.8399%
+	AUC: 75.1736%
+	mAP (interpolated): 76.9109%
+	AUC (interpolated): 76.9109%

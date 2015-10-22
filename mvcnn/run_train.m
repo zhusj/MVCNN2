@@ -94,8 +94,13 @@ end
 % -------------------------------------------------------------------------
 % imdb = get_imdb(imdbName,'useUprightAssumption',opts.useUprightAssumption);
 if ~exist('imdb','var'), 
-    load('data/fc6.mat')
+    load('data/fc6.mat','imdb')
+    load('data/W_d.mat')
 end
+% if ~exist('score2','var'), 
+%     load('data/score2.mat')
+% end
+
 
 if isfield(imdb.meta,'invert'), 
     opts.invert = imdb.meta.invert;
@@ -112,6 +117,8 @@ end
 % -------------------------------------------------------------------------
 
 net = initializeNetwork(opts.baseModel, imdb.meta.classes) ;
+net.layers{1,1}.weights{1}(1,1,:,:) = W_d;
+
 if ~isempty(opts.border), 
     net.normalization.border = opts.border; 
 end
@@ -425,11 +432,11 @@ net.layers = {} ;
 % net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout6', 'rate', 0.5) ;
 
 % Block 7
-net = add_block(net, opts, 7, 1, 1, 4096, 4096, 1, 0, init_bias); 
+net = add_block(net, opts, 7, 1, 1, 49152, 50, 1, 0, init_bias); 
 net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout7', 'rate', 0.5);
 
 % Block 8
-net = add_block(net, opts, 8, 1, 1, 4096, numClass, 1, 0, 0);
+net = add_block(net, opts, 8, 1, 1, 50, numClass, 1, 0, 0);
 net.layers(end) = [];
 
 % Block 9

@@ -58,7 +58,7 @@ opts.useUprightAssumption = true;
 opts.addBranch = false;
 opts.addSupervision = false;
 opts.addfc = false;
-opts.addDropout = true;
+opts.addDropout = false;
 
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -67,7 +67,7 @@ if ~isempty(opts.baseModel),
 else
     opts.expDir = imdbName; 
 end
-opts.expDir = fullfile('/media/DATA/mvcnn', opts.prefix, ...
+opts.expDir = fullfile('./data', opts.prefix, ...
     sprintf('%s-seed-%02d', opts.expDir, opts.seed));
 [opts, varargin] = vl_argparse(opts,varargin) ;
 
@@ -92,7 +92,11 @@ end
 % -------------------------------------------------------------------------
 %                                                                 Get imdb
 % -------------------------------------------------------------------------
-imdb = get_imdb(imdbName,'useUprightAssumption',opts.useUprightAssumption);
+% imdb = get_imdb(imdbName,'useUprightAssumption',opts.useUprightAssumption);
+if ~exist('imdb','var'), 
+    load('data/fc6.mat')
+end
+
 if isfield(imdb.meta,'invert'), 
     opts.invert = imdb.meta.invert;
 else
@@ -113,32 +117,32 @@ if ~isempty(opts.border),
 end
 
 % Initialize average image
-if isempty(net.normalization.averageImage), 
-    % compute the average image
-    averageImagePath = fullfile(opts.expDir, 'average.mat') ;
-    if exist(averageImagePath, 'file')
-      load(averageImagePath, 'averageImage') ;
-    else
-      train = find(imdb.images.set == 1) ;
-      bs = 256 ;
-      fn = getBatchWrapper(net.normalization, 'numThreads',...
-          opts.numFetchThreads,'augmentation', opts.aug);
-      for t=1:bs:numel(train)
-        batch_time = tic ;
-        batch = train(t:min(t+bs-1, numel(train))) ;
-        fprintf('Computing average image: processing batch starting with image %d ...', batch(1)) ;
-        temp = fn(imdb, batch) ;
-        im{t} = mean(temp, 4) ;
-        batch_time = toc(batch_time) ;
-        fprintf(' %.2f s (%.1f images/s)\n', batch_time, numel(batch)/ batch_time) ;
-      end
-      averageImage = mean(cat(4, im{:}),4) ;
-      save(averageImagePath, 'averageImage') ;
-    end
-
-    net.normalization.averageImage = averageImage ;
-    clear averageImage im temp ;
-end
+% if isempty(net.normalization.averageImage), 
+%     % compute the average image
+%     averageImagePath = fullfile(opts.expDir, 'average.mat') ;
+%     if exist(averageImagePath, 'file')
+%       load(averageImagePath, 'averageImage') ;
+%     else
+%       train = find(imdb.images.set == 1) ;
+%       bs = 256 ;
+%       fn = getBatchWrapper(net.normalization, 'numThreads',...
+%           opts.numFetchThreads,'augmentation', opts.aug);
+%       for t=1:bs:numel(train)
+%         batch_time = tic ;
+%         batch = train(t:min(t+bs-1, numel(train))) ;
+%         fprintf('Computing average image: processing batch starting with image %d ...', batch(1)) ;
+%         temp = fn(imdb, batch) ;
+%         im{t} = mean(temp, 4) ;
+%         batch_time = toc(batch_time) ;
+%         fprintf(' %.2f s (%.1f images/s)\n', batch_time, numel(batch)/ batch_time) ;
+%       end
+%       averageImage = mean(cat(4, im{:}),4) ;
+%       save(averageImagePath, 'averageImage') ;
+%     end
+% 
+%     net.normalization.averageImage = averageImage ;
+%     clear averageImage im temp ;
+% end
 
 % Add dropout layers
 if opts.addDropout, 
@@ -151,17 +155,17 @@ if opts.addDropout,
 end
 
 % Add viewpool layer if multiview is enabled
-if opts.multiview, 
-    viewpoolLayer = struct('name', 'viewpool', ...
-        'type', 'custom', ...
-        'stride', opts.nViews, ...
-        'method', 'max', ...
-        'forward', @viewpool_fw, ...
-        'backward', @viewpool_bw);
-    net = modify_net(net, viewpoolLayer, ...
-        'mode','add_layer', ...
-        'loc',opts.viewpoolLoc);
-end
+% if opts.multiview, 
+%     viewpoolLayer = struct('name', 'viewpool', ...
+%         'type', 'custom', ...
+%         'stride', opts.nViews, ...
+%         'method', 'max', ...
+%         'forward', @viewpool_fw, ...
+%         'backward', @viewpool_bw);
+%     net = modify_net(net, viewpoolLayer, ...
+%         'mode','add_layer', ...
+%         'loc',opts.viewpoolLoc);
+% end
 
 % Add branch layers
 if opts.addBranch, 
@@ -382,43 +386,43 @@ opts.weightDecay = 1;
 
 net.layers = {} ;
 
-% Block 1
-net = add_block(net, opts, 1, 11, 11, 3, 96, 4, 0, 0);
-net.layers{end+1} = struct('type', 'pool', 'name', 'pool1', ...
-                           'method', 'max', ...
-                           'pool', [3 3], ...
-                           'stride', 2, ...
-                           'pad', 0) ;
-net.layers{end+1} = struct('type', 'normalize', 'name', 'norm1', ...
-                           'param', [5 1 0.0001/5 0.75]) ;
-
-% Block 2
-net = add_block(net, opts, 2, 5, 5, 48, 256, 1, 2, init_bias);
-net.layers{end+1} = struct('type', 'pool', 'name', 'pool2', ...
-                           'method', 'max', ...
-                           'pool', [3 3], ...
-                           'stride', 2, ...
-                           'pad', 0) ;
-net.layers{end+1} = struct('type', 'normalize', 'name', 'norm2', ...
-                           'param', [5 1 0.0001/5 0.75]) ;
-
-% Block 3
-net = add_block(net, opts, 3, 3, 3, 256, 384, 1, 1, init_bias);
-
-% Block 4
-net = add_block(net, opts, 4, 3, 3, 192, 384, 1, 1, init_bias); 
-
-% Block 5
-net = add_block(net, opts, 5, 3, 3, 192, 256, 1, 1, init_bias); 
-net.layers{end+1} = struct('type', 'pool', 'name', 'pool5', ...
-                           'method', 'max', ...
-                           'pool', [3 3], ...
-                           'stride', 2, ...
-                           'pad', 0) ;
-
-% Block 6
-net = add_block(net, opts, 6, 6, 6, 256, 4096, 1, 0, init_bias);
-net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout6', 'rate', 0.5) ;
+% % Block 1
+% net = add_block(net, opts, 1, 11, 11, 3, 96, 4, 0, 0);
+% net.layers{end+1} = struct('type', 'pool', 'name', 'pool1', ...
+%                            'method', 'max', ...
+%                            'pool', [3 3], ...
+%                            'stride', 2, ...
+%                            'pad', 0) ;
+% net.layers{end+1} = struct('type', 'normalize', 'name', 'norm1', ...
+%                            'param', [5 1 0.0001/5 0.75]) ;
+% 
+% % Block 2
+% net = add_block(net, opts, 2, 5, 5, 48, 256, 1, 2, init_bias);
+% net.layers{end+1} = struct('type', 'pool', 'name', 'pool2', ...
+%                            'method', 'max', ...
+%                            'pool', [3 3], ...
+%                            'stride', 2, ...
+%                            'pad', 0) ;
+% net.layers{end+1} = struct('type', 'normalize', 'name', 'norm2', ...
+%                            'param', [5 1 0.0001/5 0.75]) ;
+% 
+% % Block 3
+% net = add_block(net, opts, 3, 3, 3, 256, 384, 1, 1, init_bias);
+% 
+% % Block 4
+% net = add_block(net, opts, 4, 3, 3, 192, 384, 1, 1, init_bias); 
+% 
+% % Block 5
+% net = add_block(net, opts, 5, 3, 3, 192, 256, 1, 1, init_bias); 
+% net.layers{end+1} = struct('type', 'pool', 'name', 'pool5', ...
+%                            'method', 'max', ...
+%                            'pool', [3 3], ...
+%                            'stride', 2, ...
+%                            'pad', 0) ;
+% 
+% % Block 6
+% net = add_block(net, opts, 6, 6, 6, 256, 4096, 1, 0, init_bias);
+% net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout6', 'rate', 0.5) ;
 
 % Block 7
 net = add_block(net, opts, 7, 1, 1, 4096, 4096, 1, 0, init_bias); 

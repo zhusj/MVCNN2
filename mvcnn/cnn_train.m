@@ -9,7 +9,7 @@ opts.batchSize = 256 ;
 opts.useGpu = false ;
 opts.learningRate = 0.001 ;
 opts.continue = false ;
-opts.expDir = fullfile('/media/DATA/mvcnn','exp') ;
+opts.expDir = fullfile('./data','exp') ;
 opts.conserveMemory = false ;
 opts.sync = true ;
 opts.prefetch = false ;
@@ -164,7 +164,7 @@ for epoch=1:opts.numEpochs
     batch_time = tic ;
     fprintf('training: epoch %02d: processing batch %3d of %3d ...', epoch, ...
             fix(t/opts.batchSize)+1, ceil(numel(train)/opts.batchSize)) ;
-    [im, labels,poses] = getBatch(imdb, batch) ;
+    [im, labels,poses] = getBatch(imdb, batch) ; %stopped here
     labels = labels(1:nViews:end);
     
     if opts.prefetch

@@ -1,4 +1,4 @@
-function feats = imdb_compute_cnn_features( imdbName, model, varargin )
+function feats = imdb_compute_cnn_features_save( imdbName, model, varargin )
 %IMDB_COMPUTE_CNN_FEATURES Compute and save CNN activations features
 %
 %   imdb:: 'ModelNet40v1'
@@ -63,6 +63,7 @@ opts.powerTrans = 0.5;
 % -------------------------------------------------------------------------
 imdb = get_imdb(imdbName);
 [imdb.images.id,I] = sort(imdb.images.id);
+I = I(1:11808);%first 10 classes
 imdb.images.name = imdb.images.name(I);
 imdb.images.class = imdb.images.class(I);
 imdb.images.set = imdb.images.set(I);
@@ -135,16 +136,16 @@ layers.index = [];
 for i = 1:length(net.layers), 
     ires = i+1;
     [sz1, sz2, sz3, sz4] = size(res(ires).x);
-    if sz1==1 && sz2==1 && sz4==1 && isfield(net.layers{i},'name'),
-        layers.name{end+1} = net.layers{i}.name;
-        layers.index(end+1) = ires;
-        layers.sizes(:,end+1) = [sz1;sz2;sz3];
-    end
-%     if sum(i == 13:15) ~= 0,
+%     if sz1==1 && sz2==1 && sz4==1 && isfield(net.layers{i},'name'),
 %         layers.name{end+1} = net.layers{i}.name;
 %         layers.index(end+1) = ires;
 %         layers.sizes(:,end+1) = [sz1;sz2;sz3];
 %     end
+    if sum(i == 13:15) ~= 0,
+        layers.name{end+1} = net.layers{i}.name;
+        layers.index(end+1) = ires;
+        layers.sizes(:,end+1) = [sz1;sz2;sz3];
+    end
 end
 fprintf(' done!\n');
 
@@ -241,7 +242,7 @@ parfor_progress(0);
 % -------------------------------------------------------------------------
 featCell = cell(1,numel(layers.name));
 for fi=1:numel(layers.name),
-    featCell{fi}.x = zeros(nImgs*nSubWins,layers.sizes(3,fi));
+    featCell{fi}.x = single(zeros(nImgs*nSubWins,layers.sizes(1,fi),layers.sizes(2,fi),layers.sizes(3,fi)));
     featCell{fi}.imdb = imdb;
     featCell{fi}.modelName = modelName;
     featCell{fi}.layerName = layers.name{fi};
@@ -259,8 +260,8 @@ for i=1:nImgs,
     if mod(i,500)==0, fprintf(' %4d/%4d\n', i,nImgs); end
     feat = load(fullfile(cacheDir, [num2str(i) '.mat']));
     for fi = 1:numel(layers.name),
-        featCell{fi}.x((i-1)*nSubWins+(1:nSubWins),:) = ...
-            squeeze(feat.(layers.name{fi}))';
+        featCell{fi}.x((i-1)*nSubWins+(1:nSubWins),:,:,:) = ...
+            squeeze(feat.(layers.name{fi}));
 %             squeeze(feat.(layers.name{fi}))';
     end
 end

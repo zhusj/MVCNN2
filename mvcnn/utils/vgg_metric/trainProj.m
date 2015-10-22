@@ -139,7 +139,9 @@ function [ model ] = trainProj( faceFeat, personID, personList, params )
 
         % regularization
         W = (1-gamma*lambda) * W;
-
+        
+%         sum(sum(W))
+        
         if mod(t,1e4)==0, fprintf('.'); end;
         if mod(t,1e5)==0, fprintf(' [%d/%d]\n', t,numIter); end;
             

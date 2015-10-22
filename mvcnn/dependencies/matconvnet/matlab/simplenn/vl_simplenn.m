@@ -156,6 +156,7 @@ opts.cudnn = true ;
 opts.backPropDepth = +inf ;
 opts.addSupervision = true;
 opts.views = 12;
+opts.fusion = false;
 
 opts = vl_argparse(opts, varargin);
 
@@ -216,7 +217,7 @@ res(1).x = x ;
 %     net_n.layers{1}.class = poses;
 %     net_n = vl_simplenn_move(net_n, 'gpu') ;
 % end
-if opts.addSupervision && size(x,4)~=1
+if opts.addSupervision && size(x,4)~=1 && doder
 %       res = struct(...
 %     'x', cell(1,n+1), ...
 %     'dzdx', cell(1,n+1), ...
@@ -244,7 +245,13 @@ if opts.addSupervision && size(x,4)~=1
     opts.scale = 1;
     opts.weightDecay = 1;
     initBias= 0.1;
-    % net = add_block(net, opts, 9, 1, 1, 4096, 60, 1, 0, 0.1); 
+%     net_n.layers{1} = struct('type', 'conv', 'name', 'fc_p', ...
+%                                'weights', {{0.01/opts.scale * randn(1, 1, 512, opts.views, 'single'), ...
+%                                initBias*ones(1,opts.views,'single')}}, ...
+%                                'stride', 1, ...
+%                                'pad', 0, ...
+%                                'learningRate', [10 20], ...
+%                                'weightDecay', [opts.weightDecay 0]) ;
     net_n.layers{1} = struct('type', 'conv', 'name', 'fc_p', ...
                                'weights', {{0.01/opts.scale * randn(1, 1, 512, opts.views, 'single'), ...
                                initBias*ones(1,opts.views,'single')}}, ...
@@ -252,8 +259,9 @@ if opts.addSupervision && size(x,4)~=1
                                'pad', 0, ...
                                'learningRate', [10 20], ...
                                'weightDecay', [opts.weightDecay 0]) ;
-    % net.layers{end+1} = struct('type', 'relu', 'name', 'relu_p') ;
     net_n.layers{2} = struct('type', 'softmaxloss', 'name', 'loss') ;
+
+%     net_n.layers{2}.class = reshape(repmat(net.layers{end}.class,opts.views,1),1,length(net.layers{end}.class)*opts.views);
     pose = 1:opts.views;
     poses = repmat(pose,1,size(x,4)/opts.views);
     net_n.layers{2}.class = poses;
@@ -282,21 +290,28 @@ for i=1:n
                                'pad', l.pad, 'stride', l.stride, ...
                                cudnn{:}) ;
       else
-           if i == 23
-          %%%%% L2 norm %%%%%%%%%%%%%%%%%%
-              res_23_sum = sqrt(sum(sum(sum(sum(abs(res(23).x).^2)))));
-              res_20_sum = sqrt(sum(sum(sum(sum(abs(res(20).x).^2)))));
-              res(i+1).x = vl_nnconv(res(20).x/res_20_sum*10 + res(23).x/res_23_sum*10, l.filters, l.biases, ...
-                 'pad', l.pad, 'stride', l.stride, ...
-                 cudnn{:}) ;
-           else
+          if opts.fusion
+%               if i == 13
+              %%%%% L2 norm %%%%%%%%%%%%%%%%%%
+%                  res_13_sum = sqrt(sum(sum(sum(sum(abs(res(13).x).^2)))));
+%                  res_11_sum = sqrt(sum(sum(sum(sum(abs(res(11).x).^2)))));
+%                  res(i+1).x = vl_nnconv(res(11).x/res_11_sum*10 + res(13).x/res_13_sum*10, l.filters, l.biases, ...
+%                     'pad', l.pad, 'stride', l.stride, ...
+%                     cudnn{:}) ;
+              if i == 23
+                 res(i+1).x = vl_nnconv((res(20).x + res(23).x), l.filters, l.biases, ...
+                    'pad', l.pad, 'stride', l.stride, ...
+                    cudnn{:}) ;
+              else
+                 res(i+1).x = vl_nnconv(res(i).x, l.filters, l.biases, ...
+                          'pad', l.pad, 'stride', l.stride, ...
+                          cudnn{:}) ;
+              end
+          else
               res(i+1).x = vl_nnconv(res(i).x, l.filters, l.biases, ...
-                       'pad', l.pad, 'stride', l.stride, ...
-                       cudnn{:}) ;
-           end
-%           res(i+1).x = vl_nnconv(res(i).x, l.filters, l.biases, ...
-%                        'pad', l.pad, 'stride', l.stride, ...
-%                        cudnn{:}) ;
+                          'pad', l.pad, 'stride', l.stride, ...
+                          cudnn{:}) ;
+          end
 
 %         if isfield(l,'branch')
 %             if strcmp(l.branch, 'pose')
@@ -359,6 +374,13 @@ for i=1:n
       elseif opts.freezeDropout
         [res(i+1).x, res(i+1).aux] = vl_nndropout(res(i).x, 'rate', l.rate, 'mask', res(i+1).aux) ;
       else
+%           if opts.fusion
+%               if i ==22
+%                   [res(i+1).x, res(i+1).aux] = vl_nndropout(res(19).x+res(22).x, 'rate', l.rate) ;
+%               else
+%                   [res(i+1).x, res(i+1).aux] = vl_nndropout(res(i).x, 'rate', l.rate) ;
+%               end
+%           end                  
         [res(i+1).x, res(i+1).aux] = vl_nndropout(res(i).x, 'rate', l.rate) ;
       end
     case 'bnorm'
@@ -371,6 +393,10 @@ for i=1:n
       res(i+1) = vl_nnpdist(res(i).x, l.p, 'noRoot', l.noRoot, 'epsilon', l.epsilon) ;
     case 'custom'
 %         res(i+1) = l.forward(l, res(14), res(i+1)) ;
+%         if opts.fusion
+%             res(14).x = (res(11).x + res(13).x + res(14).x)/3;
+%             res(i+1) = l.forward(l, res(i), res(i+1)) ;
+%         end
       res(i+1) = l.forward(l, res(i), res(i+1)) ;
     otherwise
       error('Unknown layer type %s', l.type) ;
@@ -391,8 +417,8 @@ for i=1:n
   res(i).time = toc(res(i).time) ;
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%
-if doder
+%%%%%%%%%%%%%%%%%%%%%%%% addSupervision
+if opts.addSupervision && doder
     for i=1:2
       l = net_n.layers{i} ;
 %       for j=1:5

@@ -1,7 +1,9 @@
 setup;
+clear
 
 if ~exist('feat','var'), 
-  feat = load('data/features/modelnet40phong-imagenet-vgg-m-finetuned-modelnet40phong-BS60_AUGnone-finetuned-modelnet40phong-BS60_AUGnone_MVfc7-none/NORM0/relu7.mat');
+  feat = load('/media/DATA/mvcnn/features/ModelNet40v1-imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_add_correct_softmax_12_views_10_epochs_add_dropot_fc6_fc7_MVconv5-none/NORM0/relu7.mat');
+  feat2 = load('/media/DATA/mvcnn/features/ModelNet40v1-imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-BS60_AUGnone_MVconv5-none/NORM0/relu7.mat');
   % feat = load('data/features/modelnet40phong-imagenet-vgg-m-finetuned-modelnet40phong-BS60_AUGnone-none/NORM0/relu7.mat');
 end
 

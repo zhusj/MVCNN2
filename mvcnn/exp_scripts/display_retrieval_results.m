@@ -5,7 +5,11 @@ function display_retrieval_results()
 % r.dists0 
 % info 
 % imdb 
-if ~exist('r','var'), load('data/eval.mat'); end;
+if ~exist('r','var'), 
+    load('/media/DATA/mvcnn/features/ModelNet40v1-imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-BS60_AUGnone_MVconv5-none/NORM0/relu7/evalRet.mat'); 
+end;
+load('/media/DATA/mvcnn/features/ModelNet40v1-imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-BS60_AUGnone_MVconv5-none/NORM0/relu7.mat'); 
+r = res;
 
 % sort imdb.images wrt id
 [imdb.images.id, I] = sort(imdb.images.id);
@@ -23,13 +27,13 @@ if isfield(imdb.images,'sid'),
     imdb.images.id = imdb.images.id(I);
 end
 
-nViews = 6;
-nRefViews = 12;
-sketchDir = 'data/sketch160r6';
-zedgeDir = 'data/modelnet40zedge';
-toonDir = 'data/modelnet40toon';
-viewDir = 'data/modelnet40view';
-saveDir = 'data/retrieval-results';vl_xmkdir(saveDir);
+nViews = 1;%6;
+nRefViews = 1%;12;
+sketchDir = '/media/DATA/mvcnn/sketch160r6';
+zedgeDir = '/media/DATA/mvcnn/modelnet40zedge';
+toonDir = '/media/DATA/mvcnn/modelnet40toon';
+viewDir = '/media/DATA/mvcnn/modelnet40view';
+saveDir = '/media/DATA/mvcnn/retrieval-results';vl_xmkdir(saveDir);
 queryView = 2;
 dispViews = [1];% [1 5 9];
 nTops = 10;

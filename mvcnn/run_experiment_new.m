@@ -11,13 +11,13 @@ ex = struct([]);
 ex(end+1).trainOpts = struct(...
     'baseModel', '', ... 
     'dataset', 'ModelNet40v1', ...
-    'batchSize', 60, ... 
+    'batchSize', 10, ... 
     'aug', 'none', ...
-    'numEpochs', 15, ...
+    'numEpochs', 10, ...
     'gpuMode', false, ...
-    'multiview', true, ...
+    'multiview', false, ...
     'viewpoolLoc', 'conv5', ...
-    'learningRate', [1e-4*ones(1,3) 3e-5*ones(1,3) 1e-5*ones(1,3) 1e-6*ones(1,3)], ...
+    'learningRate', [1e-4*ones(1,3) 3e-5*ones(1,3) 1e-5*ones(1,3) 1e-6*ones(1,3)], ...%set1: [1e-4*ones(1,3) 3e-5*ones(1,3) 1e-5*ones(1,3) 1e-6*ones(1,3)], ...    set2: logspace(-2, -4, 60) ;set3: logspace(-1, -4, 20) ;
     'momentum', 0.5, ...
     'includeVal', true, ...
     'useUprightAssumption', false); 
@@ -25,13 +25,13 @@ ex(end).featOpts = struct(...
     'dataset', 'ModelNet40v1', ...
     'aug', 'none', ...
     'gpuMode', false, ...
-    'numWorkers', 6);
+    'numWorkers', 2);
 ex(end).claOpts = struct(...
     'feat', 'relu7'); 
 ex(end).retOpts = struct(...
     'feat','relu7',...
     'gpuMode', false, ...
-    'numWorkers', 6); 
+    'numWorkers', 2); 
 
 
 for i=1:length(ex), 
@@ -41,7 +41,7 @@ for i=1:length(ex),
     if isfield(ex(i),'trainOpts') && ~skipTrain, 
         trainOpts = ex(i).trainOpts;
 %         prefix = sprintf('BS%d_AUG%s', trainOpts.batchSize, trainOpts.aug);
-        prefix = 'pose';
+        prefix = 'pose_10_epochs_5_times_leariningRate_batchSize_10';
         if isfield(trainOpts,'multiview') && trainOpts.multiview, 
             prefix = sprintf('%s_MV%s',prefix,trainOpts.viewpoolLoc);
         end
@@ -50,9 +50,9 @@ for i=1:length(ex),
 %         modelName = sprintf('%s-finetuned-%s-%s', trainOpts.baseModel, ...
 %             trainOpts.dataset, 'branch');
         trainOpts.prefix = prefix;
-        if ~exist(fullfile('/data','models',[modelName '.mat']),'file'),
+        if ~exist(fullfile('./data','models',[modelName '.mat']),'file'),
             net = run_train(trainOpts.dataset, trainOpts);
-            save(fullfile('/data','models',[modelName '.mat']),'-struct','net');
+            save(fullfile('./data','models',[modelName '.mat']),'-struct','net');
         end
         if isfield(ex(i),'featOpts'), ex(i).featOpts.model = modelName; end
     end
@@ -63,47 +63,48 @@ for i=1:length(ex),
     clear feats;
     if isfield(ex(i),'featOpts') && ~skipEval,
         featOpts = ex(i).featOpts;
-        featDir = fullfile('/media/DATA/mvcnn', 'features', ...
+        featDir = fullfile('./data', 'features', ...
             [featOpts.dataset '-' featOpts.model '-' featOpts.aug], 'NORM0');
         if exist(fullfile(featDir, 'prob.mat'),'file'), % supposedly the last
             fprintf('Existing descriptors found at %s \n', featDir);
         end
-        feats = imdb_compute_cnn_features(featOpts.dataset, featOpts.model, ...
+        if ~isfield(featOpts, 'logPath'), featOpts.logPath = logPath; end
+        evaluate_performance(featOpts.dataset, featOpts.model, ...
             'normalization', false, featOpts);
     end
     
     % ---------------------------------------------------------------------
     %                                            classification evaluation
     % ---------------------------------------------------------------------
-    if isfield(ex(i),'claOpts') && exist('feats','var') && ~skipEval, 
-        claOpts = ex(i).claOpts;
-        evalClaPath = fullfile(featDir,claOpts.feat,'evalCla.mat');
-        if exist(evalClaPath, 'file'), 
-            fprintf('Classification evaluated before at %s \n', evalClaPath);
-        else
-            if ~isfield(claOpts, 'log2c'), claOpts.log2c = [-8:4:4]; end
-            if ~isfield(claOpts, 'cv'), claOpts.cv = 2; end
-            if ~isfield(claOpts, 'logPath'), claOpts.logPath = logPath; end
-            evaluate_classification(feats.(claOpts.feat), ...
-                'predPath', evalClaPath, ...
-                claOpts);
-        end
-    end
-    
-    % ---------------------------------------------------------------------
-    %                                                 retrieval evaluation 
-    % ---------------------------------------------------------------------
-    if isfield(ex(i),'retOpts') && exist('feats','var') && ~skipEval, 
-        retOpts = ex(i).retOpts;
-        evalRetPath = fullfile(featDir,retOpts.feat,'evalRet.mat');
-        if exist(evalRetPath, 'file'), 
-            fprintf('Retrieval evaluated before at %s \n', evalRetPath);
-        else
-            if ~isfield(retOpts, 'logPath'), retOpts.logPath = logPath; end
-            [res,info] = retrieve_shapes_cnn([],feats.(retOpts.feat),retOpts);
-            save(evalRetPath,'res','info');
-        end
-    end
+%     if isfield(ex(i),'claOpts') && exist('feats','var') && ~skipEval, 
+%         claOpts = ex(i).claOpts;
+%         evalClaPath = fullfile(featDir,claOpts.feat,'evalCla.mat');
+%         if exist(evalClaPath, 'file'), 
+%             fprintf('Classification evaluated before at %s \n', evalClaPath);
+%         else
+%             if ~isfield(claOpts, 'log2c'), claOpts.log2c = [-8:4:4]; end
+%             if ~isfield(claOpts, 'cv'), claOpts.cv = 2; end
+%             if ~isfield(claOpts, 'logPath'), claOpts.logPath = logPath; end
+%             evaluate_classification(feats.(claOpts.feat), ...
+%                 'predPath', evalClaPath, ...
+%                 claOpts);
+%         end
+%     end
+%     
+%     % ---------------------------------------------------------------------
+%     %                                                 retrieval evaluation 
+%     % ---------------------------------------------------------------------
+%     if isfield(ex(i),'retOpts') && exist('feats','var') && ~skipEval, 
+%         retOpts = ex(i).retOpts;
+%         evalRetPath = fullfile(featDir,retOpts.feat,'evalRet.mat');
+%         if exist(evalRetPath, 'file'), 
+%             fprintf('Retrieval evaluated before at %s \n', evalRetPath);
+%         else
+%             if ~isfield(retOpts, 'logPath'), retOpts.logPath = logPath; end
+%             [res,info] = retrieve_shapes_cnn([],feats.(retOpts.feat),retOpts);
+%             save(evalRetPath,'res','info');
+%         end
+%     end
     
 end
 

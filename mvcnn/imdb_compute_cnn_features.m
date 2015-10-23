@@ -61,7 +61,10 @@ opts.powerTrans = 0.5;
 % -------------------------------------------------------------------------
 %                                                                 Get imdb
 % -------------------------------------------------------------------------
-imdb = get_imdb(imdbName);
+if ~exist('imdb','var'), 
+    load('data/fc6.mat','imdb')
+end
+% imdb = get_imdb(imdbName);
 [imdb.images.id,I] = sort(imdb.images.id);
 imdb.images.name = imdb.images.name(I);
 imdb.images.class = imdb.images.class(I);
@@ -73,7 +76,7 @@ nImgs = numel(imdb.images.name);
 %                                                                CNN Model
 % -------------------------------------------------------------------------
 if isempty(net),
-    netFilePath = fullfile('/media/DATA/mvcnn','models', [modelName '.mat']);
+    netFilePath = fullfile('./data','models', [modelName '.mat']);
     % download model if not found
     if ~exist(netFilePath,'file'),
         fprintf('Downloading model (%s) ...', modelName) ;
@@ -125,9 +128,16 @@ if isfield(net.layers{1},'weights'),
 else
   nChannels = size(net.layers{1}.filters,3);  % old format
 end
-im0 = zeros(net.normalization.imageSize(1), ...
-    net.normalization.imageSize(2), nChannels, nViews, 'single') * 255; 
+% im0 = zeros(net.normalization.imageSize(1), ...
+%     net.normalization.imageSize(2), nChannels, nViews, 'single') * 255; 
 if opts.gpuMode, im0 = gpuArray(im0); end
+
+if ~exist('train_data','var'), 
+    load('data/train_data.mat')
+    load('data/test_data.mat')
+end
+
+im0(1,1,:,:) = single([train_data;test_data]');
 res = vl_simplenn(net,im0);
 layers.name = {};
 layers.sizes = [];
@@ -135,11 +145,11 @@ layers.index = [];
 for i = 1:length(net.layers), 
     ires = i+1;
     [sz1, sz2, sz3, sz4] = size(res(ires).x);
-    if sz1==1 && sz2==1 && sz4==1 && isfield(net.layers{i},'name'),
+%     if sz1==1 && sz2==1 && sz4==1 && isfield(net.layers{i},'name'),
         layers.name{end+1} = net.layers{i}.name;
         layers.index(end+1) = ires;
         layers.sizes(:,end+1) = [sz1;sz2;sz3];
-    end
+%     end
 end
 fprintf(' done!\n');
 
@@ -147,7 +157,7 @@ fprintf(' done!\n');
 %                                                   Load data if available
 % -------------------------------------------------------------------------
 % saving directory
-saveDir = fullfile('/media/DATA/mvcnn','features',sprintf('%s-%s-%s', ...
+saveDir = fullfile('./data','features',sprintf('%s-%s-%s', ...
     imdbName, modelName, opts.aug));
 if ~opts.normalization, 
     expSuffix = 'NORM0';

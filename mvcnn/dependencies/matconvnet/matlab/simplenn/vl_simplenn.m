@@ -154,7 +154,7 @@ opts.freezeDropout = false ;
 opts.accumulate = false ;
 opts.cudnn = true ;
 opts.backPropDepth = +inf ;
-opts.addSupervision = true;
+opts.addSupervision = false;
 opts.views = 12;
 
 opts = vl_argparse(opts, varargin);
@@ -392,7 +392,7 @@ for i=1:n
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%
-if doder
+if doder && opts.addSupervision
     for i=1:2
       l = net_n.layers{i} ;
 %       for j=1:5
@@ -433,8 +433,7 @@ if doder
     end
 end
 
-if doder
-  
+if doder && opts.addSupervision  
   for i=2:-1:1
     l = net_n.layers{i} ;
 %     for j=1:5

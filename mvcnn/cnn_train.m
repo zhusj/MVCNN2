@@ -162,16 +162,19 @@ for epoch=1:opts.numEpochs
   end
 
   trainRs = reshape(opts.train,[nViews numel(opts.train)/nViews]);
-  I = randperm(numel(opts.train)/nViews);
-  train = reshape(trainRs(:,I),[1 numel(opts.train)]);
+%   I = randperm(numel(opts.train)/nViews);
+  I = randperm(numel(opts.train)/12);
+%   train = reshape(trainRs(:,I),[1 numel(opts.train)]);
   n_train = 0; 
   for t=1:opts.batchSize:numel(I)%numel(train)
     % get next image batch and labels
 %     batch = train(t:min(t+opts.batchSize-1, numel(train))) ;
     batch = I(t:min(t+opts.batchSize-1, numel(I))) ;
     batch_time = tic ;
+%     fprintf('training: epoch %02d: processing batch %3d of %3d ...', epoch, ...
+%             fix(t/opts.batchSize)+1, ceil(numel(train)/opts.batchSize)) ;
     fprintf('training: epoch %02d: processing batch %3d of %3d ...', epoch, ...
-            fix(t/opts.batchSize)+1, ceil(numel(train)/opts.batchSize)) ;
+            fix(t/opts.batchSize)+1, ceil(numel(I)/opts.batchSize)) ;
 %     [im, labels,poses] = getBatch(imdb, batch) ; %stopped here
     [im, labels] = getBatch_from_fc6(batch,train_data,train_labels);
 %     labels = labels(1:nViews:end);
@@ -285,7 +288,7 @@ for epoch=1:opts.numEpochs
   info.train.objective(end) = info.train.objective(end) / n_train ;
   info.train.error(end) = info.train.error(end) / n_train  ;
   info.train.topFiveError(end) = info.train.topFiveError(end) / n_train ;
-  info.train.speed(end) = numel(train) / info.train.speed(end) ;
+%   info.train.speed(end) = numel(train) / info.train.speed(end) ;
   info.val.objective(end) = info.val.objective(end) / n_val ;
   info.val.error(end) = info.val.error(end) / n_val ;
   info.val.topFiveError(end) = info.val.topFiveError(end) / n_val ;

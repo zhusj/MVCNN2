@@ -1,0 +1,16 @@
+(23-Oct-2015 00:22:54) -- Classification
+	accuracy (train): 95.1932%
+	accuracy (test): 83.875%
+(23-Oct-2015 00:26:31) -- Classification
+	accuracy (train): 92.9626%
+	accuracy (test): 83.5%
+(23-Oct-2015 00:29:49) -- Classification
+	accuracy (train): 94.3764%
+	accuracy (test): 84.25%
+(23-Oct-2015 00:36:33) -- Classification
+	accuracy (train): 94.879%
+	accuracy (test): 84%
+(23-Oct-2015 00:41:50) -- Classification
+	model: -finetuned-ModelNet40v1-pose_10_epochs_5_times_leariningRate_batchSize_10
+	accuracy (train): 93.2139%
+	accuracy (test): 82.875%

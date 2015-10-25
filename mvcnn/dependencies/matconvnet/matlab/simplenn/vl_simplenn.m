@@ -156,7 +156,7 @@ opts.cudnn = true ;
 opts.backPropDepth = +inf ;
 opts.addSupervision = true;
 opts.views = 12;
-opts.fusion = false;
+opts.fusion = true;
 
 opts = vl_argparse(opts, varargin);
 
@@ -226,14 +226,7 @@ if opts.addSupervision && size(x,4)~=1 && doder
 %     'time', num2cell(zeros(1,n+1)), ...
 %     'backwardTime', num2cell(zeros(1,n+1)), ...
 %     'pose', cell(1,n+1)) ;
-    res_n = struct(...
-        'x', cell(1,3), ...
-        'dzdx', cell(1,3), ...
-        'dzdw', cell(1,3), ...
-        'aux', cell(1,3), ...
-        'time', num2cell(zeros(1,3)), ...
-        'backwardTime', num2cell(zeros(1,3)), ...
-        'pose', cell(1,3)) ;
+
 %     res_n = struct(...
 %         'x', cell(size(x,4)/12,3), ...
 %         'dzdx', cell(size(x,4)/12,3), ...
@@ -245,6 +238,7 @@ if opts.addSupervision && size(x,4)~=1 && doder
     opts.scale = 1;
     opts.weightDecay = 1;
     initBias= 0.1;
+    net_n.layers = {} ;
 %     net_n.layers{1} = struct('type', 'conv', 'name', 'fc_p', ...
 %                                'weights', {{0.01/opts.scale * randn(1, 1, 512, opts.views, 'single'), ...
 %                                initBias*ones(1,opts.views,'single')}}, ...
@@ -252,20 +246,39 @@ if opts.addSupervision && size(x,4)~=1 && doder
 %                                'pad', 0, ...
 %                                'learningRate', [10 20], ...
 %                                'weightDecay', [opts.weightDecay 0]) ;
-    net_n.layers{1} = struct('type', 'conv', 'name', 'fc_p', ...
-                               'weights', {{0.01/opts.scale * randn(1, 1, 512, opts.views, 'single'), ...
+    net_n.layers{end+1} = struct('type', 'conv', 'name', 'fc_p1', ...
+                               'weights', {{0.001/opts.scale * randn(13, 13, 512, opts.views, 'single'), ...
                                initBias*ones(1,opts.views,'single')}}, ...
                                'stride', 1, ...
                                'pad', 0, ...
                                'learningRate', [10 20], ...
                                'weightDecay', [opts.weightDecay 0]) ;
-    net_n.layers{2} = struct('type', 'softmaxloss', 'name', 'loss') ;
+%     net_n.layers{end+1} = struct('type', 'relu', 'name', 'relu_pose') ;
+%     net_n.layers{end+1} = struct('type', 'conv', 'name', 'fc_p2', ...
+%                                'weights', {{0.01/opts.scale * randn(1, 1, 512, opts.views, 'single'), ...
+%                                initBias*ones(1,opts.views,'single')}}, ...
+%                                'stride', 1, ...
+%                                'pad', 0, ...
+%                                'learningRate', [10 20], ...
+%                                'weightDecay', [opts.weightDecay 0]) ;
+%     net_n.layers{end+1} = struct('type', 'softmaxloss', 'name', 'loss') ;
+    net_n.layers{end+1} = struct('type', 'softmax', 'name', 'loss') ;
+    net_n.layers{end+1} = struct('type', 'loss', 'name', 'loss') ;
 
 %     net_n.layers{2}.class = reshape(repmat(net.layers{end}.class,opts.views,1),1,length(net.layers{end}.class)*opts.views);
     pose = 1:opts.views;
     poses = repmat(pose,1,size(x,4)/opts.views);
-    net_n.layers{2}.class = poses;
+    net_n.layers{end}.class = poses;
     net_n = vl_simplenn_move(net_n, 'gpu') ;
+    numOfLayers = numel(net_n.layers);
+    res_n = struct(...
+    'x', cell(1,numOfLayers), ...
+    'dzdx', cell(1,numOfLayers), ...
+    'dzdw', cell(1,numOfLayers), ...
+    'aux', cell(1,numOfLayers), ...
+    'time', num2cell(zeros(1,numOfLayers)), ...
+    'backwardTime', num2cell(zeros(1,numOfLayers)), ...
+    'pose', cell(1,numOfLayers)) ;
 end
 %%%%%%%%%%%%%%%%
 
@@ -419,7 +432,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%% addSupervision
 if opts.addSupervision && doder
-    for i=1:2
+    for i=1:numel(net_n.layers)
       l = net_n.layers{i} ;
 %       for j=1:5
           res_n(i).time = tic ;
@@ -437,7 +450,24 @@ if opts.addSupervision && doder
                                cudnn{:}) ;
               end
             case 'softmaxloss'
+%               poseWeight = gausswin(11);
+%               for j = 1:size(res_n(i).x, 4)
+%                   temp = res_n(i).x(1,1,:,j);
+%                   u = temp(:);
+%                   u = [u(end-4:end); u; u(1:5)];
+%                   w = conv(u, poseWeight, 'valid');
+%                   res_n(i).x(1,1,:,j) = w;
+%               end
               res_n(i+1).x = vl_nnsoftmaxloss(res_n(i).x, l.class) ;
+            case 'relu'
+              if isfield(l, 'leak'), leak = {'leak', l.leak} ; else leak = {} ; end
+        %       leak = {'leak', 0.01};
+              res_n(i+1).x = vl_nnrelu(res_n(i).x,[],leak{:}) ;
+            case 'loss'
+              lossopts.loss = 'vonmises';
+              res_n(i+1).x = vl_nnloss(res_n(i).x, l.class,[], lossopts) ;
+            case 'softmax'
+              res_n(i+1).x = vl_nnsoftmax(res_n(i).x) ;
             otherwise
               error('Unknown layer type %s', l.type) ;
           end
@@ -461,10 +491,10 @@ end
 
 if doder
   
-  for i=2:-1:1
+  for i= numel(net_n.layers):-1:1
     l = net_n.layers{i} ;
 %     for j=1:5
-        res_n(3).dzdx = dzdy ;
+        res_n(end).dzdx = dzdy ;
         res_n(i).backwardTime = tic ;
         switch l.type
           case 'conv'
@@ -504,8 +534,23 @@ if doder
               end
               clear dzdw ;
             end
+          case 'relu'
+            if isfield(l, 'leak'), leak = {'leak', l.leak} ; else leak = {} ; end
+%           leak = {'leak', 0.01};
+            if ~isempty(res_n(i).x)
+              res_n(i).dzdx = vl_nnrelu(res_n(i).x, res_n(i+1).dzdx, leak{:}) ;
+            else
+            % if res(i).x is empty, it has been optimized away, so we use this
+            % hack (which works only for ReLU):
+              res_n(i).dzdx = vl_nnrelu(res_n(i+1).x, res_n(i+1).dzdx, leak{:}) ;
+            end
           case 'softmaxloss'
             res_n(i).dzdx = vl_nnsoftmaxloss(res_n(i).x, l.class, res_n(i+1).dzdx) ;
+          case 'loss'
+            lossopts.loss = 'vonmises';
+            res_n(i).dzdx = vl_nnloss(res_n(i).x, l.class, res_n(i+1).dzdx, lossopts) ;
+          case 'softmax'
+            res_n(i).dzdx = vl_nnsoftmax(res_n(i).x, res_n(i+1).dzdx) ;
         end
         if opts.conserveMemory
           res_n(i+1).dzdx = [] ;

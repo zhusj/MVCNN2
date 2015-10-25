@@ -155,7 +155,9 @@ switch lower(opts.loss)
 
     % null labels denote instances that should be skipped
     instanceWeights = single(c ~= 0) ;
-
+  case {'vonmises'}
+    instanceWeights = single(c(:,:,1,:) ~= 0) ;
+    
   otherwise
     error('Unknown loss ''%s''.', opts.loss) ;
 end
@@ -169,7 +171,7 @@ end
 % --------------------------------------------------------------------
 
 switch lower(opts.loss)
-  case {'log', 'softmaxlog', 'mhinge', 'mshinge'}
+  case {'log', 'softmaxlog', 'mhinge', 'mshinge', 'vonmises'}
     % from category labels to indexes
     numPixelsPerImage = prod(inputSize(1:2)) ;
     numPixels = numPixelsPerImage * inputSize(4) ;
@@ -209,6 +211,13 @@ if nargin <= 2 || isempty(dzdy)
       t = b + log(exp(-b) + exp(a-b)) ;
     case 'hinge'
       t = max(0, 1 - c.*X) ;
+    case 'vonmises'
+        for i = 1:12
+            for j = 1:numel(c)
+                weight (1,1,i,j) = exp(-min([abs(i-c(j)),12-abs(i-c(j))]));
+            end
+        end
+      t(1,1,1,:) = - sum(weight.*log(X), 3) ;
   end
   Y = instanceWeights(:)' * t(:) ;
 else
@@ -225,6 +234,15 @@ else
       Y = bsxfun(@rdivide, ex, sum(ex,3)) ;
       Y(ci) = Y(ci) - 1 ;
       Y = bsxfun(@times, dzdy, Y) ;
+    case 'vonmises'
+      Y = zerosLike(X) ;
+      Y(ci) = - dzdy ./ max(X(ci), 1e-8) ;
+      for i = 1:12
+          for j = 1:numel(c)
+              weight (1,1,i,j) = exp(-min([abs(i-c(j)),12-abs(i-c(j))]));
+          end
+      end
+      Y = bsxfun(@times, weight, Y) ;
     case 'mhinge'
       Y = zerosLike(X) ;
       Y(ci) = - dzdy .* (X(ci) < 1) ;

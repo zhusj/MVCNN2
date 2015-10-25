@@ -615,3 +615,97 @@
 	AUC: 67.5328%
 	mAP (interpolated): 69.1512%
 	AUC (interpolated): 69.1512%
+(23-Oct-2015 16:32:52) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_true_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.6858%
+	accuracy (test): 90.375%
+(23-Oct-2015 16:33:11) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_true_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 68.3928%
+	AUC: 67.6763%
+	mAP (interpolated): 69.2793%
+	AUC (interpolated): 69.2793%
+(23-Oct-2015 19:42:11) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_one_more_fc_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.7172%
+	accuracy (test): 90%
+(23-Oct-2015 19:42:27) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_one_more_fc_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 69.301%
+	AUC: 68.6343%
+	mAP (interpolated): 70.1378%
+	AUC (interpolated): 70.1378%
+(24-Oct-2015 14:10:12) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_Gaussian_weighted_pose_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.7172%
+	accuracy (test): 89.875%
+(24-Oct-2015 14:10:28) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_Gaussian_weighted_pose_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 69.5222%
+	AUC: 68.8668%
+	mAP (interpolated): 70.3627%
+	AUC (interpolated): 70.3627%
+(24-Oct-2015 15:50:25) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_5_times_learningRate_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.7172%
+	accuracy (test): 89.375%
+(24-Oct-2015 15:50:41) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_5_times_learningRate_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 72.7813%
+	AUC: 72.1966%
+	mAP (interpolated): 73.6606%
+	AUC (interpolated): 73.6606%
+(24-Oct-2015 16:08:11) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_5_times_learningRate_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 80.0919%
+	AUC: 79.5454%
+	mAP (interpolated): 81.0614%
+	AUC (interpolated): 81.0614%
+(24-Oct-2015 20:34:17) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropout_fc6_fc7_feature_fusion_fc6+fc7(20+23)_Von_Mises_kernel_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.7172%
+	accuracy (test): 90%
+(25-Oct-2015 12:43:38) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropout_fc6_fc7_feature_fusion_fc6+fc7(20+23)_Von_Mises_kernel_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 69.337%
+	AUC: 68.6779%
+	mAP (interpolated): 70.2135%
+	AUC (interpolated): 70.2135%

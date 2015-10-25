@@ -119,7 +119,7 @@ for i=1:length(ex),
     % ---------------------------------------------------------------------
     if isfield(ex(i),'trainOpts') && ~skipTrain, 
         trainOpts = ex(i).trainOpts;
-        prefix = 'pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)';
+        prefix = 'pose_addSup_12_views_10_epochs_add_dropout_fc6_fc7_feature_fusion_fc6+fc7(20+23)_Von_Mises_kernel';
 %         pose_addsup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7
 
 %         prefix = sprintf('BS%d_AUG%s', trainOpts.batchSize, trainOpts.aug);
@@ -181,6 +181,8 @@ for i=1:length(ex),
             fprintf('Retrieval evaluated before at %s \n', evalRetPath);
         else
             if ~isfield(retOpts, 'logPath'), retOpts.logPath = logPath; end
+%             out = double(feats.relu7.x*modelDimRedFV.W');
+%             feats.relu7.x = out;
             [res,info] = retrieve_shapes_cnn([],feats.(retOpts.feat),retOpts);
             save(evalRetPath,'res','info');
         end

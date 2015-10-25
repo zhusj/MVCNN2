@@ -95,7 +95,9 @@ end
 % imdb = get_imdb(imdbName,'useUprightAssumption',opts.useUprightAssumption);
 if ~exist('imdb','var'), 
     load('data/fc6.mat','imdb')
-    load('data/W_d.mat')
+    load('data/W_d_500.mat')
+%     load('data/train_data.mat')
+%     load('data/imagenet-vgg-m.mat')
 end
 % if ~exist('score2','var'), 
 %     load('data/score2.mat')
@@ -118,6 +120,9 @@ end
 
 net = initializeNetwork(opts.baseModel, imdb.meta.classes) ;
 net.layers{1,1}.weights{1}(1,1,:,:) = W_d;
+% net.layers{1,1} = layers{18};
+% net.layers{1,4} = layers{20};
+
 
 if ~isempty(opts.border), 
     net.normalization.border = opts.border; 
@@ -432,15 +437,19 @@ net.layers = {} ;
 % net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout6', 'rate', 0.5) ;
 
 % Block 7
-net = add_block(net, opts, 7, 1, 1, 49152, 50, 1, 0, init_bias); 
+net = add_block(net, opts, 7, 1, 1, 49152, 500, 1, 0, init_bias); 
 net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout7', 'rate', 0.5);
 
+% net = add_block(net, opts, 7, 1, 1, 500, 500, 1, 0, init_bias); 
+% net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout7', 'rate', 0.5);
+
 % Block 8
-net = add_block(net, opts, 8, 1, 1, 50, numClass, 1, 0, 0);
+net = add_block(net, opts, 8, 1, 1, 500, numClass, 1, 0, 0);
 net.layers(end) = [];
 
 % Block 9
 net.layers{end+1} = struct('type', 'softmaxloss', 'name', 'loss') ;
+% net.layers{end+1} = struct('type', 'softmax', 'name', 'prob') ;
 
 % Other details
 net.normalization.imageSize = [224, 224, 3] ;
@@ -463,7 +472,7 @@ net.layers{end+1} = struct('type', 'conv', 'name', sprintf('%s%d', name, id), ..
                            initBias*ones(1,out,'single')}}, ...
                            'stride', stride, ...
                            'pad', pad, ...
-                           'learningRate', [1*5 2*5], ...
+                           'learningRate', [1 2], ...
                            'weightDecay', [opts.weightDecay 0]) ;
 net.layers{end+1} = struct('type', 'relu', 'name', sprintf('relu%d',id)) ;
 % -------------------------------------------------------------------------

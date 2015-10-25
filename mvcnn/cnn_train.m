@@ -114,8 +114,13 @@ res = [] ;
 
 if ~exist('train_data','var'), 
     load('data/train_data.mat')
+    
+%     load('data/train_reconstructed_4096.mat')
+%     train_data = train_reconstructed_4096;
+
     load('data/train_labels.mat')
 end
+
 
 
 for epoch=1:opts.numEpochs

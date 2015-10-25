@@ -147,7 +147,7 @@ function res = vl_simplenn(net, x, dzdy, res, varargin)
 % the terms of the BSD license (see the COPYING file).
 
 opts.res = [] ;
-opts.conserveMemory = false ;
+opts.conserveMemory = true ;
 opts.sync = false ;
 opts.disableDropout = false ;
 opts.freezeDropout = false ;
@@ -733,7 +733,7 @@ if doder
         res(i).dzdx = vl_nnloss(res(i).x, l.class, res(i+1).dzdx) ;
       case 'softmaxloss'
         %%%%%% my change to accomendate two softmaxloss
-        res(i+1).dzdx = dzdy ;
+%         res(i+1).dzdx = dzdy ;
         %%%%%
         res(i).dzdx = vl_nnsoftmaxloss(res(i).x, l.class, res(i+1).dzdx) ;
       case 'relu'

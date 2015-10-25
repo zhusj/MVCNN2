@@ -136,9 +136,19 @@ fprintf('Testing model (%s) ...', modelName) ;
 if ~exist('train_data','var'), 
     load('data/train_data.mat')
     load('data/test_data.mat')
+
+%     load('data/train_reconstructed_4096.mat');
+%     load('data/test_reconstructed_4096.mat');
+%     train_data = train_reconstructed_4096;
+%     test_data = test_reconstructed_4096;
+
     load('data/train_labels.mat')
     load('data/test_labels.mat')
 end
+
+train_mean = mean(train_data);
+train_data = bsxfun(@minus,train_data,train_mean);
+test_data = bsxfun(@minus,test_data,train_mean);
 
 im_train(1,1,:,:) = single(train_data');
 res_train = vl_simplenn(net,im_train);

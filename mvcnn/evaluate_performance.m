@@ -63,7 +63,7 @@ opts.logPath = fullfile('log','eval_new.txt');
 %                                                                 Get imdb
 % -------------------------------------------------------------------------
 if ~exist('imdb','var'), 
-    load('data/fc6.mat','imdb')
+    load('/media/DATA/mvcnn/data/fc6.mat','imdb')
 end
 % imdb = get_imdb(imdbName);
 [imdb.images.id,I] = sort(imdb.images.id);
@@ -77,7 +77,7 @@ nImgs = numel(imdb.images.name);
 %                                                                CNN Model
 % -------------------------------------------------------------------------
 if isempty(net),
-    netFilePath = fullfile('./data','models', [modelName '.mat']);
+    netFilePath = fullfile('/media/DATA/mvcnn//data','models', [modelName '.mat']);
     % download model if not found
     if ~exist(netFilePath,'file'),
         fprintf('Downloading model (%s) ...', modelName) ;
@@ -134,21 +134,24 @@ fprintf('Testing model (%s) ...', modelName) ;
 % if opts.gpuMode, im0 = gpuArray(im0); end
 
 if ~exist('train_data','var'), 
-    load('data/train_data.mat')
-    load('data/test_data.mat')
+    load('/media/DATA/mvcnn/data/train_data.mat')
+    load('/media/DATA/mvcnn/data/test_data.mat')
+    load('/media/DATA/mvcnn/data/train_mean.mat')
 
 %     load('data/train_reconstructed_4096.mat');
 %     load('data/test_reconstructed_4096.mat');
 %     train_data = train_reconstructed_4096;
 %     test_data = test_reconstructed_4096;
 
-    load('data/train_labels.mat')
-    load('data/test_labels.mat')
+    load('/media/DATA/mvcnn/data/train_labels.mat')
+    load('/media/DATA/mvcnn/data/test_labels.mat')
 end
 
-train_mean = mean(train_data);
+
 train_data = bsxfun(@minus,train_data,train_mean);
 test_data = bsxfun(@minus,test_data,train_mean);
+train_data = gpuArray(train_data);
+test_data = gpuArray(test_data);
 
 im_train(1,1,:,:) = single(train_data');
 res_train = vl_simplenn(net,im_train);

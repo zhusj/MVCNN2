@@ -1,4 +1,4 @@
-load('data/split_GCF_split-test2.mat')
+load('/media/DATA/mvcnn/data/split_GCF_split-test2.mat')
 train_data = cell2mat({train_GCF.C})';
 % train_labels = cell2mat({train_GCF.class})';
 % test_data = cell2mat({test_GCF.C})';
@@ -8,7 +8,7 @@ train_data = cell2mat({train_GCF.C})';
 % [residuals,reconstructed] = pcares(test_data,4096);
 
 % 
-d = 4096;
+d = 1000;
 train_mean = mean(train_data);
 Basis_ = bsxfun(@minus,train_data,train_mean);
 [Basis_, S, V] = myPCA(Basis_,d);

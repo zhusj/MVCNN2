@@ -9,7 +9,7 @@ opts.batchSize = 256 ;
 opts.useGpu = false ;
 opts.learningRate = 0.001 ;
 opts.continue = false ;
-opts.expDir = fullfile('./data','exp') ;
+opts.expDir = fullfile('/media/DATA/mvcnn/data','exp') ;
 opts.conserveMemory = false ;
 opts.sync = true ;
 opts.prefetch = false ;
@@ -113,12 +113,14 @@ lr = 0 ;
 res = [] ;
 
 if ~exist('train_data','var'), 
-    load('data/train_data.mat')
+    load('/media/DATA/mvcnn/data/train_data.mat')
+    load('/media/DATA/mvcnn/data/train_mean.mat')
+    train_data = bsxfun(@minus,train_data,train_mean);
     
 %     load('data/train_reconstructed_4096.mat')
 %     train_data = train_reconstructed_4096;
 
-    load('data/train_labels.mat')
+    load('/media/DATA/mvcnn/data/train_labels.mat')
 end
 
 

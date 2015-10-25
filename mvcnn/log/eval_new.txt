@@ -106,3 +106,15 @@
 	model: -finetuned-ModelNet40v1-pose_10_epochs_20_times_leariningRate_batchSize_10_W_d_500
 	accuracy (train): 76.8143%
 	accuracy (test): 66.375%
+(25-Oct-2015 14:22:48) -- Classification
+	model: -finetuned-ModelNet40v1-pose_10_epochs_10_times_leariningRate_batchSize_10_W_d_500_0_bias_centralize_data
+	accuracy (train): 98.2721%
+	accuracy (test): 86.625%
+(25-Oct-2015 14:46:29) -- Classification
+	model: -finetuned-ModelNet40v1-pose_10_epochs_10_times_leariningRate_batchSize_10_W_d_500_random_0_bias_centralize_data
+	accuracy (train): 98.4606%
+	accuracy (test): 85.75%
+(25-Oct-2015 14:51:04) -- Classification
+	model: -finetuned-ModelNet40v1-pose_10_epochs_10_times_leariningRate_batchSize_10_W_d_100_0_bias_centralize_data
+	accuracy (train): 97.0782%
+	accuracy (test): 85%

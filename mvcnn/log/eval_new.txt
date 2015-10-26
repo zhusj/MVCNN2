@@ -118,3 +118,7 @@
 	model: -finetuned-ModelNet40v1-pose_10_epochs_10_times_leariningRate_batchSize_10_W_d_100_0_bias_centralize_data
 	accuracy (train): 97.0782%
 	accuracy (test): 85%
+(25-Oct-2015 15:02:21) -- Classification
+	model: -finetuned-ModelNet40v1-pose_10_epochs_10_times_leariningRate_batchSize_10_W_d_1000_0_bias_centralize_data
+	accuracy (train): 98.6491%
+	accuracy (test): 86.75%

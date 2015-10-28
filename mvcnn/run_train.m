@@ -59,6 +59,8 @@ opts.addBranch = false;
 opts.addSupervision = false;
 opts.addfc = false;
 opts.addDropout = true;
+opts.fusion = false;
+opts.concatenateFC6 = false;
 
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -67,7 +69,7 @@ if ~isempty(opts.baseModel),
 else
     opts.expDir = imdbName; 
 end
-opts.expDir = fullfile('/media/DATA/mvcnn', opts.prefix, ...
+opts.expDir = fullfile('./data', opts.prefix, ...
     sprintf('%s-seed-%02d', opts.expDir, opts.seed));
 [opts, varargin] = vl_argparse(opts,varargin) ;
 
@@ -151,17 +153,17 @@ if opts.addDropout,
 end
 
 % Add viewpool layer if multiview is enabled
-if opts.multiview, 
-    viewpoolLayer = struct('name', 'viewpool', ...
-        'type', 'custom', ...
-        'stride', opts.nViews, ...
-        'method', 'avg', ...
-        'forward', @viewpool_fw, ...
-        'backward', @viewpool_bw);
-    net = modify_net(net, viewpoolLayer, ...
-        'mode','add_layer', ...
-        'loc',opts.viewpoolLoc);
-end
+% if opts.multiview, 
+%     viewpoolLayer = struct('name', 'viewpool', ...
+%         'type', 'custom', ...
+%         'stride', opts.nViews, ...
+%         'method', 'avg', ...
+%         'forward', @viewpool_fw, ...
+%         'backward', @viewpool_bw);
+%     net = modify_net(net, viewpoolLayer, ...
+%         'mode','add_layer', ...
+%         'loc',opts.viewpoolLoc);
+% end
 
 % Add branch layers
 if opts.addBranch, 
@@ -227,6 +229,11 @@ if opts.addfc,
 %                             new_relu_layer, ...
 %                             dropoutLayer, ...
 %                             net.layers(19:end)); 
+end
+
+
+if opts.concatenateFC6
+    net.layers{19}.filters = repmat(net.layers{19}.filters,1,1,12,1);
 end
 
 % -------------------------------------------------------------------------
@@ -325,11 +332,11 @@ init_bias = 0.1;
 numClass = length(classNames);
 
 if ~isempty(baseModel), 
-    netFilePath = fullfile('/media/DATA/mvcnn','models', [baseModel '.mat']);
+    netFilePath = fullfile('./data','models', [baseModel '.mat']);
     % download model if not found
     if ~exist(netFilePath,'file'),
         fprintf('Downloading model (%s) ...', baseModel) ;
-        vl_xmkdir(fullfile('/media/DATA/mvcnn','models')) ;
+        vl_xmkdir(fullfile('./data','models')) ;
         urlwrite( strrep( fullfile('http://maxwell.cs.umass.edu/deep-shape-data/models', ...
             [baseModel '.mat']), '\', '/'), netFilePath) ;
         fprintf(' done!\n');

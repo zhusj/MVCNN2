@@ -743,3 +743,29 @@
 	AUC: 62.687%
 	mAP (interpolated): 64.3554%
 	AUC (interpolated): 64.3554%
+(27-Oct-2015 00:41:06) -- Retrieval
+	dataset: data\ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-pose_addSup_relu4_12_views_10_epochs_add_dropout_fc6_fc7_feature_fusion_fc6+fc7(20+23)_Von_Mises_kernel_vgg_m
+	layer: relu7
+	method: avgdesc
+	mAP: 52.3262%
+	AUC: 51.4826%
+	mAP (interpolated): 53.12%
+	AUC (interpolated): 53.12%
+(27-Oct-2015 14:05:34) -- Classification
+	c: 0.0625 (cv=2)
+	dataset: data\ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-_no_view_pooling_add_dropout_concatenate_fc6_MVconv5
+	layer: relu7
+	multiview: true (avgsdesc)
+	accuracy (train): 99.2512%
+	accuracy (test): 79.8333%
+(27-Oct-2015 14:06:18) -- Retrieval
+	dataset: data\ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-_no_view_pooling_add_dropout_concatenate_fc6_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 51.4882%
+	AUC: 50.6467%
+	mAP (interpolated): 52.2166%
+	AUC (interpolated): 52.2166%

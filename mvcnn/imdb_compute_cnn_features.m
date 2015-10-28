@@ -56,6 +56,7 @@ opts.pca = 500;
 opts.pcaNumSamples = 10^5;
 opts.whiten = true;
 opts.powerTrans = 0.5;
+opts.test = true;
 [opts,varargin] = vl_argparse(opts,varargin);
 
 % -------------------------------------------------------------------------
@@ -73,11 +74,11 @@ nImgs = numel(imdb.images.name);
 %                                                                CNN Model
 % -------------------------------------------------------------------------
 if isempty(net),
-    netFilePath = fullfile('/media/DATA/mvcnn','models', [modelName '.mat']);
+    netFilePath = fullfile('./data','models', [modelName '.mat']);
     % download model if not found
     if ~exist(netFilePath,'file'),
         fprintf('Downloading model (%s) ...', modelName) ;
-        vl_xmkdir(fullfile('/media/DATA/mvcnn','models')) ;
+        vl_xmkdir(fullfile('./data','models')) ;
         urlwrite(fullfile('http://maxwell.cs.umass.edu/deep-shape-data/models', ...
             [modelName '.mat']), netFilePath) ;
         fprintf(' done!\n');
@@ -128,6 +129,10 @@ end
 im0 = zeros(net.normalization.imageSize(1), ...
     net.normalization.imageSize(2), nChannels, nViews, 'single') * 255; 
 if opts.gpuMode, im0 = gpuArray(im0); end
+
+if opts.test
+    net.layers{18}.filters = net.layers{18}.filters(1,1,1:4096,:);
+end
 res = vl_simplenn(net,im0);
 layers.name = {};
 layers.sizes = [];
@@ -152,7 +157,7 @@ fprintf(' done!\n');
 %                                                   Load data if available
 % -------------------------------------------------------------------------
 % saving directory
-saveDir = fullfile('/media/DATA/mvcnn','features',sprintf('%s-%s-%s', ...
+saveDir = fullfile('./data','features',sprintf('%s-%s-%s', ...
     imdbName, modelName, opts.aug));
 if ~opts.normalization, 
     expSuffix = 'NORM0';

@@ -9,7 +9,7 @@ opts.batchSize = 256 ;
 opts.useGpu = false ;
 opts.learningRate = 0.001 ;
 opts.continue = false ;
-opts.expDir = fullfile('/media/DATA/mvcnn','exp') ;
+opts.expDir = fullfile('./data','exp') ;
 opts.conserveMemory = false ;
 opts.sync = true ;
 opts.prefetch = false ;
@@ -165,6 +165,7 @@ for epoch=1:opts.numEpochs
     fprintf('training: epoch %02d: processing batch %3d of %3d ...', epoch, ...
             fix(t/opts.batchSize)+1, ceil(numel(train)/opts.batchSize)) ;
     [im, labels,poses] = getBatch(imdb, batch) ;
+
     labels = labels(1:nViews:end);
     
     if opts.prefetch
@@ -256,7 +257,7 @@ for epoch=1:opts.numEpochs
 
     net.layers{end}.class = labels ;
     res = vl_simplenn(net, im, [], res, ...
-      'disableDropout', true, ...
+      'disableDropout', false, ...
       'conserveMemory', opts.conserveMemory, ...
       'sync', opts.sync) ;
 
@@ -281,7 +282,7 @@ for epoch=1:opts.numEpochs
   info.val.error(end) = info.val.error(end) / n_val ;
   info.val.topFiveError(end) = info.val.topFiveError(end) / n_val ;
   info.val.speed(end) = numel(val) / info.val.speed(end) ;
-  save(modelPath(epoch), 'net', 'info') ;
+  save('-v7.3', modelPath(epoch), 'net', 'info') ;
 
   figure(1) ; clf ;
   subplot(1,2,1) ;

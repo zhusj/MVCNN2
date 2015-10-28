@@ -61,6 +61,7 @@ opts.addfc = false;
 opts.addDropout = true;
 opts.fusion = false;
 opts.concatenateFC6 = false;
+opts.CF = true; 
 
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -164,6 +165,26 @@ end
 %         'mode','add_layer', ...
 %         'loc',opts.viewpoolLoc);
 % end
+
+% Add CF layer
+if opts.CF, 
+    viewpoolLayer = struct('name', 'CFpool', ...
+        'type', 'custom', ...
+        'stride', opts.nViews, ...
+        'method', 'avg', ...
+        'forward', @viewpool_fw, ...
+        'backward', @viewpool_bw);
+    net = modify_net(net, viewpoolLayer, ...
+        'mode','add_layer', ...
+        'loc','fc6');
+    load('./data/W_d_500.mat')
+    net.layers{20}.filters = [];
+    net.layers{20}.filters(1,1,1:49152,1:500) = single(W_d);
+    net.layers{20}.biases = 0.1*ones(1,500,'single');
+    net.layers{23}.filters = 0.01*randn(1,1,500,40,'single');
+    net.layers{23}.biases = 0.1*ones(1,40,'single');
+end
+
 
 % Add branch layers
 if opts.addBranch, 
@@ -464,48 +485,75 @@ net.layers{end+1} = struct('type', 'conv', 'name', sprintf('%s%d', name, id), ..
 net.layers{end+1} = struct('type', 'relu', 'name', sprintf('relu%d',id)) ;
 % -------------------------------------------------------------------------
 
-% -------------------------------------------------------------------------
 function res_ip1 = viewpool_fw(layer, res_i, res_ip1)
 % -------------------------------------------------------------------------
 [sz1, sz2, sz3, sz4] = size(res_i.x);
-if mod(sz4,layer.stride)~=0, 
-    error('all shapes should have same number of views');
+for i = 1:sz4/layer.stride
+    data = res_i.x(:,:,:,(i-1)*layer.stride+1:i*layer.stride);
+    data = reshape(data,12,[]);
+    [CF]=XtoC(data);
+    res_ip1.x = gpuArray(0);
+    res_ip1.x(1,1,1:sz3*layer.stride,i) = single(reshape(CF(:),sz1,sz2,sz3*layer.stride,1));
 end
-if strcmp(layer.method, 'avg'), 
-    res_ip1.x = permute(...
-        mean(reshape(res_i.x,[sz1 sz2 sz3 layer.stride sz4/layer.stride]), 4), ...
-        [1,2,3,5,4]);
-elseif strcmp(layer.method, 'max'), 
-    res_ip1.x = permute(...
-        max(reshape(res_i.x,[sz1 sz2 sz3 layer.stride sz4/layer.stride]), [], 4), ...
-        [1,2,3,5,4]);
-    res_ip1.pose = reshape(res_i.x,[sz1*sz2*sz3 layer.stride sz4/layer.stride]);
-else
-    error('Unknown viewpool method: %s', layer.method);
-end
+
 
 % -------------------------------------------------------------------------
 function res_i = viewpool_bw(layer, res_i, res_ip1)
 % -------------------------------------------------------------------------
 [sz1, sz2, sz3, sz4] = size(res_ip1.dzdx);
-if strcmp(layer.method, 'avg'), 
-    res_i.dzdx = ...
-        reshape(repmat(reshape(res_ip1.dzdx / layer.stride, ...
-                       [sz1 sz2 sz3 1 sz4]), ...
-                [1 1 1 layer.stride 1]),...
-        [sz1 sz2 sz3 layer.stride*sz4]);
-elseif strcmp(layer.method, 'max'), 
-    [~,I] = max(reshape(permute(res_i.x,[4 1 2 3]), ...
-                [layer.stride, sz4*sz1*sz2*sz3]),[],1);
-    Ind = zeros(layer.stride,sz4*sz1*sz2*sz3, 'single');
-    Ind(sub2ind(size(Ind),I,1:length(I))) = 1;
-    Ind = permute(reshape(Ind,[layer.stride*sz4,sz1,sz2,sz3]),[2 3 4 1]);
-    res_i.dzdx = ...
-        reshape(repmat(reshape(res_ip1.dzdx, ...
-                       [sz1 sz2 sz3 1 sz4]), ...
-                [1 1 1 layer.stride 1]),...
-        [sz1 sz2 sz3 layer.stride*sz4]) .* Ind;
-else
-    error('Unknown viewpool method: %s', layer.method);
+for i = 1:sz4
+    data = res_ip1.x(:,:,:,i);
+    data = reshape(data,12,[]);
+    [X]=CtoX(data);
+    dzdy = reshape(res_ip1.dzdx(:,:,:,i),12,[]);
+    X = X.*dzdy;
+    res_i.dzdx = gpuArray(0);
+    res_i.dzdx(1,1,1:sz3/layer.stride,(i-1)*layer.stride+1:i*layer.stride) = single(reshape(X,sz1,sz2,sz3/layer.stride,layer.stride));
 end
+
+
+% -------------------------------------------------------------------------
+% function res_ip1 = viewpool_fw(layer, res_i, res_ip1)
+% % -------------------------------------------------------------------------
+% [sz1, sz2, sz3, sz4] = size(res_i.x);
+% if mod(sz4,layer.stride)~=0, 
+%     error('all shapes should have same number of views');
+% end
+% if strcmp(layer.method, 'avg'), 
+%     res_ip1.x = permute(...
+%         mean(reshape(res_i.x,[sz1 sz2 sz3 layer.stride sz4/layer.stride]), 4), ...
+%         [1,2,3,5,4]);
+% elseif strcmp(layer.method, 'max'), 
+%     res_ip1.x = permute(...
+%         max(reshape(res_i.x,[sz1 sz2 sz3 layer.stride sz4/layer.stride]), [], 4), ...
+%         [1,2,3,5,4]);
+%     res_ip1.pose = reshape(res_i.x,[sz1*sz2*sz3 layer.stride sz4/layer.stride]);
+% else
+%     error('Unknown viewpool method: %s', layer.method);
+% end
+% 
+% % -------------------------------------------------------------------------
+% function res_i = viewpool_bw(layer, res_i, res_ip1)
+% % -------------------------------------------------------------------------
+% [sz1, sz2, sz3, sz4] = size(res_ip1.dzdx);
+% if strcmp(layer.method, 'avg'), 
+%     res_i.dzdx = ...
+%         reshape(repmat(reshape(res_ip1.dzdx / layer.stride, ...
+%                        [sz1 sz2 sz3 1 sz4]), ...
+%                 [1 1 1 layer.stride 1]),...
+%         [sz1 sz2 sz3 layer.stride*sz4]);
+% elseif strcmp(layer.method, 'max'), 
+%     [~,I] = max(reshape(permute(res_i.x,[4 1 2 3]), ...
+%                 [layer.stride, sz4*sz1*sz2*sz3]),[],1);
+%     Ind = zeros(layer.stride,sz4*sz1*sz2*sz3, 'single');
+%     Ind(sub2ind(size(Ind),I,1:length(I))) = 1;
+%     Ind = permute(reshape(Ind,[layer.stride*sz4,sz1,sz2,sz3]),[2 3 4 1]);
+%     res_i.dzdx = ...
+%         reshape(repmat(reshape(res_ip1.dzdx, ...
+%                        [sz1 sz2 sz3 1 sz4]), ...
+%                 [1 1 1 layer.stride 1]),...
+%         [sz1 sz2 sz3 layer.stride*sz4]) .* Ind;
+% else
+%     error('Unknown viewpool method: %s', layer.method);
+% end
 

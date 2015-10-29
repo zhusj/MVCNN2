@@ -62,7 +62,7 @@ opts.powerTrans = 0.5;
 %                                                                 Get imdb
 % -------------------------------------------------------------------------
 if ~exist('imdb','var'), 
-    load('data/fc6.mat','imdb')
+    load('/media/DATA/mvcnn/data/fc6.mat','imdb')
 end
 % imdb = get_imdb(imdbName);
 [imdb.images.id,I] = sort(imdb.images.id);
@@ -76,7 +76,7 @@ nImgs = numel(imdb.images.name);
 %                                                                CNN Model
 % -------------------------------------------------------------------------
 if isempty(net),
-    netFilePath = fullfile('./data','models', [modelName '.mat']);
+    netFilePath = fullfile('/media/DATA/mvcnn/data','models', [modelName '.mat']);
     % download model if not found
     if ~exist(netFilePath,'file'),
         fprintf('Downloading model (%s) ...', modelName) ;
@@ -130,14 +130,16 @@ else
 end
 % im0 = zeros(net.normalization.imageSize(1), ...
 %     net.normalization.imageSize(2), nChannels, nViews, 'single') * 255; 
-if opts.gpuMode, im0 = gpuArray(im0); end
+
 
 if ~exist('train_data','var'), 
-    load('data/train_data.mat')
-    load('data/test_data.mat')
+    load('/media/DATA/mvcnn/data/train_data.mat')
+    load('/media/DATA/mvcnn/data/test_data.mat')
 end
 
 im0(1,1,:,:) = single([train_data;test_data]');
+if opts.gpuMode, im0 = gpuArray(im0); end
+
 res = vl_simplenn(net,im0);
 layers.name = {};
 layers.sizes = [];

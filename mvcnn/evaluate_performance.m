@@ -136,7 +136,7 @@ fprintf('Testing model (%s) ...', modelName) ;
 if ~exist('train_data','var'), 
     load('/media/DATA/mvcnn/data/train_data.mat')
     load('/media/DATA/mvcnn/data/test_data.mat')
-    load('/media/DATA/mvcnn/data/train_mean.mat')
+%     load('/media/DATA/mvcnn/data/train_mean.mat')
 
 %     load('data/train_reconstructed_4096.mat');
 %     load('data/test_reconstructed_4096.mat');
@@ -148,8 +148,8 @@ if ~exist('train_data','var'),
 end
 
 
-train_data = bsxfun(@minus,train_data,train_mean);
-test_data = bsxfun(@minus,test_data,train_mean);
+% train_data = bsxfun(@minus,train_data,train_mean);
+% test_data = bsxfun(@minus,test_data,train_mean);
 train_data = gpuArray(train_data);
 test_data = gpuArray(test_data);
 
@@ -165,6 +165,32 @@ res_test = vl_simplenn(net,im_test);
 test_softmax_result = res_test(end).x(1,1,:,:);
 [~,test_result] = max(test_softmax_result);
 accuTest = sum(test_result(:) == test_labels)/numel(test_labels)
+
+bestcv = 0;
+for log2c = -4:2:4,
+    cmd = ['-v ', num2str(5) ,' -c ', num2str(2^log2c)];
+    cmd = [cmd ' -q'];
+    cv = liblinear_train(trainLabel,trainFeat,cmd);
+    if (cv >= bestcv),
+        bestcv = cv; bestc = 2^log2c;
+    end
+    fprintf('%g %g (best c=%g, rate=%g)\n', log2c, cv, bestc, bestcv);
+end
+
+cmd = ['-c ', num2str(bestc)];
+cmd = [cmd ' -q'];
+model = liblinear_train(trainLabel,trainFeat,cmd);
+
+cmd = [''];
+cmd = [cmd ' -q'];
+[~,accuTrain,~] = liblinear_predict(trainLabel,trainFeat,model,cmd);
+[predTest,accuTest,decTest] = liblinear_predict(testLabel,testFeat,...
+    model,cmd);
+[~,I] = sort(model.Label);
+decTest = decTest(:,I);
+accuTest = accuTest(1)/100;
+accuTrain = accuTrain(1)/100;
+
 
 fid = fopen(opts.logPath,'a+');
 fprintf(fid, '(%s) -- Classification\n', datestr(now));

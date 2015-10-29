@@ -147,7 +147,7 @@ function res = vl_simplenn(net, x, dzdy, res, varargin)
 % the terms of the BSD license (see the COPYING file).
 
 opts.res = [] ;
-opts.conserveMemory = true ;
+opts.conserveMemory = false ;
 opts.sync = false ;
 opts.disableDropout = false ;
 opts.freezeDropout = false ;

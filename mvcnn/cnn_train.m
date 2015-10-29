@@ -114,8 +114,8 @@ res = [] ;
 
 if ~exist('train_data','var'), 
     load('/media/DATA/mvcnn/data/train_data.mat')
-    load('/media/DATA/mvcnn/data/train_mean.mat')
-    train_data = bsxfun(@minus,train_data,train_mean);
+%     load('/media/DATA/mvcnn/data/train_mean.mat')
+%     train_data = bsxfun(@minus,train_data,train_mean);
     
 %     load('data/train_reconstructed_4096.mat')
 %     train_data = train_reconstructed_4096;

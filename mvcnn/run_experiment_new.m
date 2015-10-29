@@ -17,7 +17,7 @@ ex(end+1).trainOpts = struct(...
     'gpuMode', true, ...
     'multiview', false, ...
     'viewpoolLoc', 'conv5', ...
-    'learningRate', [1e-4*ones(1,3) 3e-5*ones(1,3) 1e-5*ones(1,3) 1e-6*ones(1,3)]*10, ...%set1: [1e-4*ones(1,3) 3e-5*ones(1,3) 1e-5*ones(1,3) 1e-6*ones(1,3)], ...    set2: logspace(-2, -4, 60) ;set3: logspace(-3, -4, 10) ;
+    'learningRate', [1e-4*ones(1,3) 3e-5*ones(1,3) 1e-5*ones(1,3) 1e-6*ones(1,3)], ...%set1: [1e-4*ones(1,3) 3e-5*ones(1,3) 1e-5*ones(1,3) 1e-6*ones(1,3)], ...    set2: logspace(-2, -4, 60) ;set3: logspace(-3, -4, 10) ;
     'momentum', 0.5, ...
     'includeVal', true, ...
     'useUprightAssumption', false); 
@@ -41,7 +41,7 @@ for i=1:length(ex),
     if isfield(ex(i),'trainOpts') && ~skipTrain, 
         trainOpts = ex(i).trainOpts;
 %         prefix = sprintf('BS%d_AUG%s', trainOpts.batchSize, trainOpts.aug);
-        prefix = 'pose_10_epochs_10_times_leariningRate_batchSize_10_W_d_1000_0_bias_centralize_data';
+        prefix = 'pose_10_epochs_10_times_leariningRate_batchSize_10_W_d_500';
         if isfield(trainOpts,'multiview') && trainOpts.multiview, 
             prefix = sprintf('%s_MV%s',prefix,trainOpts.viewpoolLoc);
         end
@@ -69,6 +69,8 @@ for i=1:length(ex),
             fprintf('Existing descriptors found at %s \n', featDir);
         end
         if ~isfield(featOpts, 'logPath'), featOpts.logPath = logPath; end
+%         feats = imdb_compute_cnn_features(featOpts.dataset, featOpts.model, ...
+%             'normalization', false, featOpts);
         evaluate_performance(featOpts.dataset, featOpts.model, ...
             'normalization', false, featOpts);
     end

@@ -165,7 +165,8 @@ for epoch=1:opts.numEpochs
     fprintf('training: epoch %02d: processing batch %3d of %3d ...', epoch, ...
             fix(t/opts.batchSize)+1, ceil(numel(train)/opts.batchSize)) ;
     [im, labels,poses] = getBatch(imdb, batch) ;
-    labels = labels(1:nViews:end);
+    
+    labels = labels(1:nViews:end);%comment out when no viewpooling
     
     if opts.prefetch
       nextBatch = train(t+opts.batchSize:min(t+2*opts.batchSize-1, numel(train))) ;

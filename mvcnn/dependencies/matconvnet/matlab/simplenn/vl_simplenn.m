@@ -156,7 +156,7 @@ opts.cudnn = true ;
 opts.backPropDepth = +inf ;
 opts.addSupervision = true;
 opts.views = 12;
-opts.fusion = true;
+opts.fusion = false;
 
 opts = vl_argparse(opts, varargin);
 
@@ -487,80 +487,80 @@ if opts.addSupervision && doder
           res_n(i).time = toc(res_n(i).time) ;
 %       end
     end
-end
 
-if doder
-  
-  for i= numel(net_n.layers):-1:1
-    l = net_n.layers{i} ;
-%     for j=1:5
-        res_n(end).dzdx = dzdy ;
-        res_n(i).backwardTime = tic ;
-        switch l.type
-          case 'conv'
-            if ~opts.accumulate
-              if isfield(l, 'weights')
-                [res_n(i).dzdx, res_n(i).dzdw{1}, res_n(i).dzdw{2}] = ...
-                    vl_nnconv(res_n(i).x, l.weights{1}, l.weights{2}, ...
-                              res_n(i+1).dzdx, ...
-                              'pad', l.pad, 'stride', l.stride, ...
-                              cudnn{:}) ;
-              else
-                % Legacy code: will go
-                [res(i).dzdx, res(i).dzdw{1}, res(i).dzdw{2}] = ...
-                    vl_nnconv(res(i).x, l.filters, l.biases, ...
-                              res(i+1).dzdx, ...
-                              'pad', l.pad, 'stride', l.stride, ...
-                              cudnn{:}) ;
-              end
-            else
-              dzdw = cell(1,2) ;
-              if isfield(l, 'weights')
-                [res(i).dzdx, dzdw{1}, dzdw{2}] = ...
-                    vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
-                              res(i+1).dzdx, ...
-                              'pad', l.pad, 'stride', l.stride, ...
-                              cudnn{:}) ;
-              else
-                % Legacy code: will go
-                [res(i).dzdx, dzdw{1}, dzdw{2}] = ...
-                    vl_nnconv(res(i).x, l.filters, l.biases, ...
-                              res(i+1).dzdx, ...
-                              'pad', l.pad, 'stride', l.stride, ...
-                              cudnn{:}) ;
-              end
-              for jj=1:2
-                res(i).dzdw{jj} = res(i).dzdw{jj} + dzdw{jj} ;
-              end
-              clear dzdw ;
+    if doder
+
+      for i= numel(net_n.layers):-1:1
+        l = net_n.layers{i} ;
+    %     for j=1:5
+            res_n(end).dzdx = dzdy ;
+            res_n(i).backwardTime = tic ;
+            switch l.type
+              case 'conv'
+                if ~opts.accumulate
+                  if isfield(l, 'weights')
+                    [res_n(i).dzdx, res_n(i).dzdw{1}, res_n(i).dzdw{2}] = ...
+                        vl_nnconv(res_n(i).x, l.weights{1}, l.weights{2}, ...
+                                  res_n(i+1).dzdx, ...
+                                  'pad', l.pad, 'stride', l.stride, ...
+                                  cudnn{:}) ;
+                  else
+                    % Legacy code: will go
+                    [res(i).dzdx, res(i).dzdw{1}, res(i).dzdw{2}] = ...
+                        vl_nnconv(res(i).x, l.filters, l.biases, ...
+                                  res(i+1).dzdx, ...
+                                  'pad', l.pad, 'stride', l.stride, ...
+                                  cudnn{:}) ;
+                  end
+                else
+                  dzdw = cell(1,2) ;
+                  if isfield(l, 'weights')
+                    [res(i).dzdx, dzdw{1}, dzdw{2}] = ...
+                        vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
+                                  res(i+1).dzdx, ...
+                                  'pad', l.pad, 'stride', l.stride, ...
+                                  cudnn{:}) ;
+                  else
+                    % Legacy code: will go
+                    [res(i).dzdx, dzdw{1}, dzdw{2}] = ...
+                        vl_nnconv(res(i).x, l.filters, l.biases, ...
+                                  res(i+1).dzdx, ...
+                                  'pad', l.pad, 'stride', l.stride, ...
+                                  cudnn{:}) ;
+                  end
+                  for jj=1:2
+                    res(i).dzdw{jj} = res(i).dzdw{jj} + dzdw{jj} ;
+                  end
+                  clear dzdw ;
+                end
+              case 'relu'
+                if isfield(l, 'leak'), leak = {'leak', l.leak} ; else leak = {} ; end
+    %           leak = {'leak', 0.01};
+                if ~isempty(res_n(i).x)
+                  res_n(i).dzdx = vl_nnrelu(res_n(i).x, res_n(i+1).dzdx, leak{:}) ;
+                else
+                % if res(i).x is empty, it has been optimized away, so we use this
+                % hack (which works only for ReLU):
+                  res_n(i).dzdx = vl_nnrelu(res_n(i+1).x, res_n(i+1).dzdx, leak{:}) ;
+                end
+              case 'softmaxloss'
+                res_n(i).dzdx = vl_nnsoftmaxloss(res_n(i).x, l.class, res_n(i+1).dzdx) ;
+              case 'loss'
+                lossopts.loss = 'vonmises';
+                res_n(i).dzdx = vl_nnloss(res_n(i).x, l.class, res_n(i+1).dzdx, lossopts) ;
+              case 'softmax'
+                res_n(i).dzdx = vl_nnsoftmax(res_n(i).x, res_n(i+1).dzdx) ;
             end
-          case 'relu'
-            if isfield(l, 'leak'), leak = {'leak', l.leak} ; else leak = {} ; end
-%           leak = {'leak', 0.01};
-            if ~isempty(res_n(i).x)
-              res_n(i).dzdx = vl_nnrelu(res_n(i).x, res_n(i+1).dzdx, leak{:}) ;
-            else
-            % if res(i).x is empty, it has been optimized away, so we use this
-            % hack (which works only for ReLU):
-              res_n(i).dzdx = vl_nnrelu(res_n(i+1).x, res_n(i+1).dzdx, leak{:}) ;
+            if opts.conserveMemory
+              res_n(i+1).dzdx = [] ;
             end
-          case 'softmaxloss'
-            res_n(i).dzdx = vl_nnsoftmaxloss(res_n(i).x, l.class, res_n(i+1).dzdx) ;
-          case 'loss'
-            lossopts.loss = 'vonmises';
-            res_n(i).dzdx = vl_nnloss(res_n(i).x, l.class, res_n(i+1).dzdx, lossopts) ;
-          case 'softmax'
-            res_n(i).dzdx = vl_nnsoftmax(res_n(i).x, res_n(i+1).dzdx) ;
-        end
-        if opts.conserveMemory
-          res_n(i+1).dzdx = [] ;
-        end
-        if gpuMode & opts.sync
-          wait(gpuDevice) ;
-        end
-        res_n(i).backwardTime = toc(res_n(i).backwardTime) ;
-%     end
-  end
+            if gpuMode & opts.sync
+              wait(gpuDevice) ;
+            end
+            res_n(i).backwardTime = toc(res_n(i).backwardTime) ;
+    %     end
+      end
+    end
 end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -614,13 +614,18 @@ if doder
                           cudnn{:}) ;
           else
             % Legacy code: will go
-            if i == 13
-                res_14_dzdx_sum = sum(sum(sum(sum(abs(res(14).dzdx)))));
-                pose_dzdx_sum = sum(sum(sum(sum(abs(res_n(1).dzdx)))));
+            if opts.addSupervision && i == 13
+%                   [res(i).dzdx, res(i).dzdw{1}, res(i).dzdw{2}] = ...
+%                     vl_nnconv(res(i).x, l.filters, l.biases, ...
+%                               res(14).dzdx + res_n(1).dzdx, ...
+%                               'pad', l.pad, 'stride', l.stride, ...
+%                               cudnn{:}) ;
+%                 res_14_dzdx_sum = sum(sum(sum(sum(abs(res(14).dzdx)))));
+%                 pose_dzdx_sum = sum(sum(sum(sum(abs(res_n(1).dzdx)))));
 
             %%%%% L2 norm %%%%%%%%%%%%%%%%%%
-%                 res_14_dzdx_sum = sqrt(sum(sum(sum(sum(abs(res(14).dzdx).^2)))));
-%                 pose_dzdx_sum = sqrt(sum(sum(sum(sum(abs(res_n(1).dzdx).^2)))));
+                res_14_dzdx_sum = sqrt(sum(sum(sum(sum(abs(res(14).dzdx).^2)))));
+                pose_dzdx_sum = sqrt(sum(sum(sum(sum(abs(res_n(1).dzdx).^2)))));
 
                 [res(i).dzdx, res(i).dzdw{1}, res(i).dzdw{2}] = ...
                     vl_nnconv(res(i).x, l.filters, l.biases, ...

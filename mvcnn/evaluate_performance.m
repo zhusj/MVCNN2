@@ -150,24 +150,37 @@ end
 
 % train_data = bsxfun(@minus,train_data,train_mean);
 % test_data = bsxfun(@minus,test_data,train_mean);
-train_data = gpuArray(train_data);
-test_data = gpuArray(test_data);
+% train_data = gpuArray(train_data);
+% test_data = gpuArray(test_data);
+% 
+% im_train(1,1,:,:) = single(train_data');
+% res_train = vl_simplenn(net,im_train);
+% train_softmax_result = res_train(end).x(1,1,:,:);
+% [~,train_result] = max(train_softmax_result);
+% accuTrain = sum(train_result(:) == train_labels)/numel(train_labels)
+% 
+% 
+% im_test(1,1,:,:) = single(test_data');
+% res_test = vl_simplenn(net,im_test);
+% test_softmax_result = res_test(end).x(1,1,:,:);
+% [~,test_result] = max(test_softmax_result);
+% accuTest = sum(test_result(:) == test_labels)/numel(test_labels)
 
-im_train(1,1,:,:) = single(train_data');
-res_train = vl_simplenn(net,im_train);
-train_softmax_result = res_train(end).x(1,1,:,:);
-[~,train_result] = max(train_softmax_result);
-accuTrain = sum(train_result(:) == train_labels)/numel(train_labels)
-
-
-im_test(1,1,:,:) = single(test_data');
-res_test = vl_simplenn(net,im_test);
-test_softmax_result = res_test(end).x(1,1,:,:);
-[~,test_result] = max(test_softmax_result);
-accuTest = sum(test_result(:) == test_labels)/numel(test_labels)
+% train_fc7 = sparse(double(squeeze(gather(res_train(2).x))))';
+% train_relu7 = sparse(double(squeeze(gather(res_train(3).x))))';
+% trainFeat = [train_fc7,train_relu7];
+% trainFeat = sparse(double(squeeze(gather(res_train(3).x))))';
+trainFeat = sparse(double(train_data));
+trainLabel = train_labels;
+% test_fc7 = sparse(double(squeeze(gather(res_test(2).x))))';
+% test_relu7 = sparse(double(squeeze(gather(res_test(3).x))))';
+% testFeat = [test_fc7,test_relu7];
+% testFeat = sparse(double(squeeze(gather(res_test(3).x))))';
+testFeat = sparse(double(test_data));
+testLabel = test_labels;
 
 bestcv = 0;
-for log2c = -4:2:4,
+for log2c = -10:1:10,
     cmd = ['-v ', num2str(5) ,' -c ', num2str(2^log2c)];
     cmd = [cmd ' -q'];
     cv = liblinear_train(trainLabel,trainFeat,cmd);
@@ -187,9 +200,9 @@ cmd = [cmd ' -q'];
 [predTest,accuTest,decTest] = liblinear_predict(testLabel,testFeat,...
     model,cmd);
 [~,I] = sort(model.Label);
-decTest = decTest(:,I);
-accuTest = accuTest(1)/100;
-accuTrain = accuTrain(1)/100;
+% decTest = decTest(:,I);
+accuTest = accuTest(1)/100
+accuTrain = accuTrain(1)/100
 
 
 fid = fopen(opts.logPath,'a+');

@@ -154,13 +154,53 @@ opts.freezeDropout = false ;
 opts.accumulate = false ;
 opts.cudnn = true ;
 opts.backPropDepth = +inf ;
-opts.addSupervision = true;
+opts.addSupervision = false;
 opts.views = 12;
 opts.fusion = false;
+opts.branch12 = true;
 
 opts = vl_argparse(opts, varargin);
 
+% if opts.branch12
+% if exist('res','var') 
+% if ~isempty(res) && ~isempty(res(1).res_n)
+% %     res_n = res(1).res_n;
+%     net_n = res(1).net_n;
+% end
+% end
+% end
+
+% if opts.branch12 && ~exist('net_n','var')
+%     opts.scale = 1;
+%     opts.weightDecay = 1;
+%     initBias= 0.1;
+%     net_n.layers = {} ;
+%     for i =1:12
+%         net_n.layers{i} = struct('type', 'conv', 'name', 'fc_p', ...
+%                                'weights', {{0.01/opts.scale * randn(1, 1, 4096, 3183, 'single'), ...
+%                                initBias*ones(1,3183,'single')}}, ...
+%                                'stride', 1, ...
+%                                'pad', 0, ...
+%                                'learningRate', [10 20], ...
+%                                'weightDecay', [opts.weightDecay 0]) ;
+%     end
+% 
+%     net_n = vl_simplenn_move(net_n, 'gpu') ;
+%     
+%     res_n = struct(...
+%     'x', cell(1,12), ...
+%     'dzdx', cell(1,12), ...
+%     'dzdw', cell(1,12), ...
+%     'aux', cell(1,12), ...
+%     'time', num2cell(zeros(1,12)), ...
+%     'backwardTime', num2cell(zeros(1,12)), ...
+%     'pose', cell(1,12)) ;
+% end
+%%%%%%%%%%%%%%%%
+
 n = numel(net.layers) ;
+
+
 
 if (nargin <= 2) || isempty(dzdy)
   doder = false ;
@@ -185,6 +225,10 @@ if nargin <= 3 || isempty(res)
     'time', num2cell(zeros(1,n+1)), ...
     'backwardTime', num2cell(zeros(1,n+1)), ...
     'pose', cell(1,n+1)) ;
+end
+
+for i=1:n
+    res(i).x = [] ;
 end
 res(1).x = x ;
 
@@ -290,18 +334,16 @@ for i=1:n
   switch l.type
     case 'conv'
       if isfield(l, 'weights')
-%         if i == 25
-%             res(i+1).x = vl_nnconv(res(14).x, l.weights{1}, l.weights{2}, ...
-%                        'pad', l.pad, 'stride', l.stride, ...
-%                        cudnn{:}) ;
+        if opts.branch12 && i == 18
+             res = branch12Project(res(i).x, net, res);
 %         else
 %             res(i+1).x = vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
 %                        'pad', l.pad, 'stride', l.stride, ...
 %                        cudnn{:}) ;
-%         end
-        res(i+1).x = vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
-                               'pad', l.pad, 'stride', l.stride, ...
-                               cudnn{:}) ;
+        end
+%         res(i+1).x = vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
+%                                'pad', l.pad, 'stride', l.stride, ...
+%                                cudnn{:}) ;
       else
           if opts.fusion
 %               if i == 13
@@ -315,15 +357,27 @@ for i=1:n
                  res(i+1).x = vl_nnconv((res(20).x + res(23).x), l.filters, l.biases, ...
                     'pad', l.pad, 'stride', l.stride, ...
                     cudnn{:}) ;
-              else
-                 res(i+1).x = vl_nnconv(res(i).x, l.filters, l.biases, ...
+%               else
+%                  res(i+1).x = vl_nnconv(res(i).x, l.filters, l.biases, ...
+%                           'pad', l.pad, 'stride', l.stride, ...
+%                           cudnn{:}) ;
+              end
+          else
+
+%               
+%                   res(i+1).x = vl_nnconv(res(i).x, l.filters, l.biases, ...
+%                           'pad', l.pad, 'stride', l.stride, ...
+%                           cudnn{:}) ;
+% %               elseif opts.branch12 && i == 18
+% %                  res = branch12Project(res(i).x, net, res);
+%               end
+              if opts.branch12 && i == 18
+                res = branch12Project(res(i).x, net, res);
+              elseif i<= 17 || i >=30 
+                res(i+1).x = vl_nnconv(single(res(i).x), single(l.filters), single(l.biases), ...
                           'pad', l.pad, 'stride', l.stride, ...
                           cudnn{:}) ;
               end
-          else
-              res(i+1).x = vl_nnconv(res(i).x, l.filters, l.biases, ...
-                          'pad', l.pad, 'stride', l.stride, ...
-                          cudnn{:}) ;
           end
 
 %         if isfield(l,'branch')
@@ -419,7 +473,7 @@ for i=1:n
   forget = forget & (~doder || strcmp(l.type, 'relu')) ;
   forget = forget & ~(strcmp(l.type, 'loss') || strcmp(l.type, 'softmaxloss')) ;
   forget = forget & (~isfield(l, 'rememberOutput') || ~l.rememberOutput) ;
-  if forget && i~=14
+  if forget %&& i~=14
     res(i).x = [] ;
   end
   if gpuMode & opts.sync
@@ -606,12 +660,14 @@ if doder
 %                             'pad', l.pad, 'stride', l.stride, ...
 %                             cudnn{:}) ;
 %             end
-
-            [res(i).dzdx, res(i).dzdw{1}, res(i).dzdw{2}] = ...
-                vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
-                          res(i+1).dzdx, ...
-                          'pad', l.pad, 'stride', l.stride, ...
-                          cudnn{:}) ;
+            if opts.branch12 && i == 29
+                res = branch12Project_backprop(res(18).x, net, res);
+            end
+%             [res(i).dzdx, res(i).dzdw{1}, res(i).dzdw{2}] = ...
+%                 vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
+%                           res(i+1).dzdx, ...
+%                           'pad', l.pad, 'stride', l.stride, ...
+%                           cudnn{:}) ;
           else
             % Legacy code: will go
             if opts.addSupervision && i == 13
@@ -821,6 +877,11 @@ if doder
         else
           % if res(i).x is empty, it has been optimized away, so we use this
           % hack (which works only for ReLU):
+%           if i== 17
+%               res(i).dzdx = vl_nnrelu(res(i+1).x, res(i+1).dzdx, leak{:}) ;
+%           else
+%               res(i).dzdx = vl_nnrelu(res(i+1).x, res(i+1).dzdx, leak{:}) ;
+%           end
           res(i).dzdx = vl_nnrelu(res(i+1).x, res(i+1).dzdx, leak{:}) ;
         end
       case 'sigmoid'
@@ -879,6 +940,11 @@ if doder
   end
 end
 
+
+% if exist('res_n','var')
+% %     res(1).res_n = res_n;
+%     res(1).net_n = net_n;
+% end
 
 
 

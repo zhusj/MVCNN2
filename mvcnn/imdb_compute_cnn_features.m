@@ -102,12 +102,14 @@ if opts.gpuMode,
 end
 
 % see if it's a multivew net
-viewpoolIdx = find(cellfun(@(x)strcmp(x.name, 'viewpool'),net.layers));
+% viewpoolIdx = find(cellfun(@(x)strcmp(x.name, 'viewpool'),net.layers));
+viewpoolIdx = 1;
 if ~isempty(viewpoolIdx), 
     if numel(viewpoolIdx)>1, 
         error('More than one viewpool layers found!'); 
     end
-    nViews = net.layers{viewpoolIdx}.stride;
+%     nViews = net.layers{viewpoolIdx}.stride;
+    nViews = 12;
     [imdb.images.sid,I] = sort(imdb.images.sid);
     imdb.images.name = imdb.images.name(I);
     imdb.images.class = imdb.images.class(I);

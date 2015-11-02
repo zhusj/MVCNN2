@@ -111,6 +111,7 @@ info.val.speed = [] ;
 
 lr = 0 ;
 res = [] ;
+% res.res_n = [];
 for epoch=1:opts.numEpochs
   %%%%%%%%%%%%%%%%%%
   net.epoch = epoch;

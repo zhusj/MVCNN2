@@ -58,7 +58,7 @@ opts.useUprightAssumption = true;
 opts.addBranch = false;
 opts.addSupervision = false;
 opts.addfc = false;
-opts.addDropout = false;
+opts.projectos = false;
 
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -217,16 +217,12 @@ if opts.addfc,
     net.layers = horzcat(net.layers(1:18), ...
                             new_net.layers, ...
                             net.layers(19:end)); 
-%     new_fc_layer = net.layers(19);
-%     new_fc_layer{1}.name = 'fc_n';
-%     new_relu_layer = net.layers(20);
-%     new_relu_layer{1}.name = 'relu_n';
-%     dropoutLayer = struct('type', 'dropout', 'rate', 0.5, 'name','dropout') ;
-%     net.layers = horzcat(net.layers(1:18), ...
-%                             new_fc_layer, ...
-%                             new_relu_layer, ...
-%                             dropoutLayer, ...
-%                             net.layers(19:end)); 
+end
+
+if opts.projectos
+    net = modify_net(net, [], ...
+        'mode','rm_layer', ...
+        'loc','fc7');
 end
 
 % -------------------------------------------------------------------------

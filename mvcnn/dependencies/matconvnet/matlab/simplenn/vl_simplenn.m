@@ -1,4 +1,4 @@
-function res = vl_simplenn(net, x, dzdy, res, varargin)
+function res= vl_simplenn(net, x, dzdy, res, varargin)
 % VL_SIMPLENN  Evaluates a simple CNN
 %   RES = VL_SIMPLENN(NET, X) evaluates the convnet NET on data X.
 %   RES = VL_SIMPLENN(NET, X, DZDY) evaluates the convnent NET and its
@@ -146,6 +146,7 @@ function res = vl_simplenn(net, x, dzdy, res, varargin)
 % This file is part of the VLFeat library and is made available under
 % the terms of the BSD license (see the COPYING file).
 
+
 opts.res = [] ;
 opts.conserveMemory = false ;
 opts.sync = false ;
@@ -154,11 +155,20 @@ opts.freezeDropout = false ;
 opts.accumulate = false ;
 opts.cudnn = true ;
 opts.backPropDepth = +inf ;
-opts.addSupervision = true;
+opts.addSupervision = false;
 opts.views = 12;
 opts.fusion = false;
 
 opts = vl_argparse(opts, varargin);
+
+if opts.addSupervision
+if exist('res','var') 
+if ~isempty(res) && ~isempty(res(1).net_n)
+%     res_n = res(1).res_n;
+    net_n = res(1).net_n;
+end
+end
+end
 
 n = numel(net.layers) ;
 
@@ -217,7 +227,7 @@ res(1).x = x ;
 %     net_n.layers{1}.class = poses;
 %     net_n = vl_simplenn_move(net_n, 'gpu') ;
 % end
-if opts.addSupervision && size(x,4)~=1 && doder
+if opts.addSupervision && size(x,4)~=1 && doder ~exist('net_n','var')
 %       res = struct(...
 %     'x', cell(1,n+1), ...
 %     'dzdx', cell(1,n+1), ...
@@ -246,9 +256,16 @@ if opts.addSupervision && size(x,4)~=1 && doder
 %                                'pad', 0, ...
 %                                'learningRate', [10 20], ...
 %                                'weightDecay', [opts.weightDecay 0]) ;
+%     net_n.layers{end+1} = struct('type', 'conv', 'name', 'fc_p1', ...
+%                                'weights', {{0.001/opts.scale * randn(13, 13, 512, opts.views, 'single'), ...
+%                                initBias*ones(1,opts.views,'single')}}, ...
+%                                'stride', 1, ...
+%                                'pad', 0, ...
+%                                'learningRate', [10 20], ...
+%                                'weightDecay', [opts.weightDecay 0]) ;
     net_n.layers{end+1} = struct('type', 'conv', 'name', 'fc_p1', ...
-                               'weights', {{0.001/opts.scale * randn(13, 13, 512, opts.views, 'single'), ...
-                               initBias*ones(1,opts.views,'single')}}, ...
+                               'weights', {{0.001/opts.scale * randn(13, 13, 512, 40, 'single'), ...
+                               initBias*ones(1,40,'single')}}, ...
                                'stride', 1, ...
                                'pad', 0, ...
                                'learningRate', [10 20], ...
@@ -261,24 +278,34 @@ if opts.addSupervision && size(x,4)~=1 && doder
 %                                'pad', 0, ...
 %                                'learningRate', [10 20], ...
 %                                'weightDecay', [opts.weightDecay 0]) ;
-%     net_n.layers{end+1} = struct('type', 'softmaxloss', 'name', 'loss') ;
-    net_n.layers{end+1} = struct('type', 'softmax', 'name', 'loss') ;
-    net_n.layers{end+1} = struct('type', 'loss', 'name', 'loss') ;
+    net_n.layers{end+1} = struct('type', 'softmaxloss', 'name', 'loss') ;
+%     net_n.layers{end+1} = struct('type', 'softmax', 'name', 'loss') ;
+%     net_n.layers{end+1} = struct('type', 'loss', 'name', 'loss') ;
 
 %     net_n.layers{2}.class = reshape(repmat(net.layers{end}.class,opts.views,1),1,length(net.layers{end}.class)*opts.views);
-    pose = 1:opts.views;
-    poses = repmat(pose,1,size(x,4)/opts.views);
-    net_n.layers{end}.class = poses;
+
+
+    
+%     pose = 1:opts.views;
+%     poses = repmat(pose,1,size(x,4)/opts.views);
+%     net_n.layers{end}.class = poses;
     net_n = vl_simplenn_move(net_n, 'gpu') ;
     numOfLayers = numel(net_n.layers);
-    res_n = struct(...
-    'x', cell(1,numOfLayers), ...
-    'dzdx', cell(1,numOfLayers), ...
-    'dzdw', cell(1,numOfLayers), ...
-    'aux', cell(1,numOfLayers), ...
-    'time', num2cell(zeros(1,numOfLayers)), ...
-    'backwardTime', num2cell(zeros(1,numOfLayers)), ...
-    'pose', cell(1,numOfLayers)) ;
+    if ~exist('res_n','var')
+        res_n = struct(...
+        'x', cell(1,numOfLayers), ...
+        'dzdx', cell(1,numOfLayers), ...
+        'dzdw', cell(1,numOfLayers), ...
+        'aux', cell(1,numOfLayers), ...
+        'time', num2cell(zeros(1,numOfLayers)), ...
+        'backwardTime', num2cell(zeros(1,numOfLayers)), ...
+        'pose', cell(1,numOfLayers)) ;
+    end
+end
+if exist('net_n','var') 
+%     tmp = repmat(net.layers{end}.class,12,1);
+%     net_n.layers{end}.class = tmp(:)';
+    net_n.layers{end}.class = net.layers{end}.class;
 end
 %%%%%%%%%%%%%%%%
 
@@ -629,7 +656,7 @@ if doder
 
                 [res(i).dzdx, res(i).dzdw{1}, res(i).dzdw{2}] = ...
                     vl_nnconv(res(i).x, l.filters, l.biases, ...
-                              res(14).dzdx + res_n(1).dzdx/pose_dzdx_sum*res_14_dzdx_sum, ...
+                              res(14).dzdx + 0.5*res_n(1).dzdx/pose_dzdx_sum*res_14_dzdx_sum, ...
                               'pad', l.pad, 'stride', l.stride, ...
                               cudnn{:}) ;
        %%%%%%%%%% Decay
@@ -877,6 +904,11 @@ if doder
     end
     res(i).backwardTime = toc(res(i).backwardTime) ;
   end
+end
+
+if exist('net_n','var')
+%     res(1).res_n = res_n;
+    res(1).net_n = net_n;
 end
 
 

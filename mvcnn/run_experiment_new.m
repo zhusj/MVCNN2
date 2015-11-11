@@ -40,8 +40,8 @@ for i=1:length(ex),
     % ---------------------------------------------------------------------
     if isfield(ex(i),'trainOpts') && ~skipTrain, 
         trainOpts = ex(i).trainOpts;
-%         prefix = sprintf('BS%d_AUG%s', trainOpts.batchSize, trainOpts.aug);
-        prefix = 'pose_10_epochs_10_times_leariningRate_batchSize_10_W_d_500_SVM_fc7';
+        prefix = sprintf('BS%d_AUG%s', trainOpts.batchSize, trainOpts.aug);
+%         prefix = 'pose_10_epochs_10_times_leariningRate_batchSize_10_W_d_500_NoCs';
         if isfield(trainOpts,'multiview') && trainOpts.multiview, 
             prefix = sprintf('%s_MV%s',prefix,trainOpts.viewpoolLoc);
         end

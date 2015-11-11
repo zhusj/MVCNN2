@@ -437,15 +437,24 @@ net.layers = {} ;
 % net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout6', 'rate', 0.5) ;
 
 % Block 7
-net = add_block(net, opts, 7, 1, 1, 49152, 500, 1, 0, init_bias); 
-net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout7', 'rate', 0.5);
+% net = add_block(net, opts, 7, 1, 1, 49152, 500, 1, 0, init_bias); 
+% net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout7', 'rate', 0.5);
 
 % net = add_block(net, opts, 7, 1, 1, 500, 500, 1, 0, init_bias); 
 % net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout7', 'rate', 0.5);
 
-% Block 8
-net = add_block(net, opts, 8, 1, 1, 500, numClass, 1, 0, 0);
+net = add_block(net, opts, 1, 3, 3, 49152, 500, 1, 0, init_bias); 
+net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout1', 'rate', 0.5);
+
+net = add_block(net, opts, 2, 1, 1, 500, 500, 1, 0, init_bias); 
+net.layers{end+1} = struct('type', 'dropout', 'name', 'dropout2', 'rate', 0.5);
+
+net = add_block(net, opts, 3, 1, 1, 500, numClass, 1, 0, 0);
 net.layers(end) = [];
+
+% Block 8
+% net = add_block(net, opts, 8, 1, 1, 4096, numClass, 1, 0, 0);
+% net.layers(end) = [];
 
 % Block 9
 net.layers{end+1} = struct('type', 'softmaxloss', 'name', 'loss') ;

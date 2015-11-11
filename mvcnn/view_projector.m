@@ -35,7 +35,7 @@ G = full(direct_gaussian_RBF(x,cents));%G nX8
 % 
 % Basis = MAP.U;
 
-D = 1000;
+D = 2048;
 
 CORE_TENSOR = MAP.S(1:D,1:D)*MAP.V(1:D,:);
 Basis = MAP.U(:,1:D);

@@ -58,7 +58,8 @@ opts.useUprightAssumption = true;
 opts.addBranch = false;
 opts.addSupervision = false;
 opts.addfc = false;
-opts.branch12 = true;
+opts.branch12 = false;
+opts.projectorSize =2048;
 
 [opts, varargin] = vl_argparse(opts, varargin) ;
 
@@ -140,7 +141,7 @@ if isempty(net.normalization.averageImage),
     clear averageImage im temp ;
 end
 
-% Add dropout layers
+% % Add dropout layers
 if opts.addDropout, 
     dropoutLayer = struct('type', 'dropout', 'rate', 0.5, 'name','dropout') ;
     net.layers = horzcat(net.layers(1:end-4), ...
@@ -164,25 +165,53 @@ end
 % end
 
 if opts.branch12, % cannot use ori vgg weights, randomly reinitialize
-    projectorSize = 500;
+    projectorSize = opts.projectorSize;
     load('./data/12projectors_500.mat')
-    for i =12:-1:1
+    for i = 12:-1:1%12:-1:1
       branch_layer = struct('type', 'conv', 'name', sprintf('%s%d', 'fc_b', i), ...
                                'weights', {{0.01 * randn(1, 1, 4096, projectorSize, 'single'), ...
                                0.1*ones(1,projectorSize,'single')}}, ...
                                'stride', 1, ...
                                'pad', 0, ...
-                               'learningRate', [10 20], ...
+                               'learningRate', [1 2], ...
                                'weightDecay', [1 0]) ;
 %       branch_layer.weights{1}(1,1,:,:) = CORE_TENSOR_pose{i}'/1000;
       net = modify_net(net, branch_layer, ...
           'mode','add_layer', ...
           'loc', 'relu6');
     end
-    net.layers{end-4}.filters = 0.01*randn(1,1,projectorSize,projectorSize,'single');
-    net.layers{end-4}.biases = 0.1*ones(1,projectorSize,'single');
+    %%%% rm fc7
+    net = modify_net(net, [], ...
+          'mode','rm_layer', ...
+          'loc', 'fc7');
+%     net = modify_net(net, [], ...
+%           'mode','rm_layer', ...
+%           'loc', 'fc8');
+      
+%     relu_b = struct('type', 'relu', 'name', 'relu_b') ;
+%     net = modify_net(net, relu_b, ...
+%           'mode','add_layer', ...
+%           'loc', 'fc_b12'); 
+%     net.layers{end-3}.filters = 0.01*randn(1,1,projectorSize,projectorSize,'single');
+%     net.layers{end-3}.biases = 0.1*ones(1,projectorSize,'single');
+
     net.layers{end-1}.filters = 0.01*randn(1,1,projectorSize,40,'single');
     net.layers{end-1}.biases = 0.1*ones(1,40,'single');
+end
+
+% Add dropout layers
+if opts.addDropout, 
+    dropoutLayer = struct('type', 'dropout', 'rate', 0.5, 'name','dropout') ;        
+%     net.layers = horzcat(net.layers(1:end-4), ...
+%                             dropoutLayer, ...
+%                             net.layers(end-3:end-2), ...
+%                             dropoutLayer, ...
+%                             net.layers(end-1:end)); 
+
+%%%% rm fc7
+    net.layers = horzcat(net.layers(1:end-2), ...
+                            dropoutLayer, ...
+                            net.layers(end-1:end)); 
 end
 
 % Add branch layers

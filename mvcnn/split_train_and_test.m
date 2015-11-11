@@ -1,3 +1,5 @@
+feat.x =x;
+
 nInstances = length(unique(imdb.images.sid));
 
 nViews = length(imdb.images.name)/nInstances;
@@ -49,3 +51,7 @@ testFeat = feat.x(find(tmp)',:);
 testLabel = shapeGtClasses(testSids)';
 
 nTestShapes = length(testLabel);
+
+
+[~,testR] = max(testFeat,[],2);
+sum(testR == testLabel)/800

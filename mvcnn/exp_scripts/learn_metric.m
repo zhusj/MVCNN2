@@ -2,7 +2,7 @@ setup;
 clear
 
 if ~exist('feat','var'), 
-  feat = load('/media/DATA/mvcnn/features/ModelNet40v1-imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-pose_addSup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7(20+23)_5_times_learningRate_MVconv5-none/NORM0/relu7.mat');
+  feat = load('/media/DATA/mvcnn/features/ModelNet40v1-imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-fine_tuned_vgg_add_12_branch__after_fc6_LRw4_ave_pooling_leaky0.01_8epochs_rmfc7_MVconv5-none/NORM0/relu7.mat');
 %   feat2 = load('/media/DATA/mvcnn/features/ModelNet40v1-imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-BS60_AUGnone_MVconv5-none/NORM0/relu7.mat');
   % feat = load('data/features/modelnet40phong-imagenet-vgg-m-finetuned-modelnet40phong-BS60_AUGnone-none/NORM0/relu7.mat');
 end

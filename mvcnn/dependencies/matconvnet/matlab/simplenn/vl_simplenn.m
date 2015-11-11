@@ -157,7 +157,8 @@ opts.backPropDepth = +inf ;
 opts.addSupervision = false;
 opts.views = 12;
 opts.fusion = false;
-opts.branch12 = true;
+opts.branch12 = false;
+opts.weighted = false;
 
 opts = vl_argparse(opts, varargin);
 
@@ -335,7 +336,7 @@ for i=1:n
     case 'conv'
       if isfield(l, 'weights')
         if opts.branch12 && i == 18
-             res = branch12Project(res(i).x, net, res);
+             res = branch12Project_new(res(i).x, net, res, opts);
 %         else
 %             res(i+1).x = vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
 %                        'pad', l.pad, 'stride', l.stride, ...
@@ -365,19 +366,19 @@ for i=1:n
           else
 
 %               
-%                   res(i+1).x = vl_nnconv(res(i).x, l.filters, l.biases, ...
-%                           'pad', l.pad, 'stride', l.stride, ...
-%                           cudnn{:}) ;
+                  res(i+1).x = vl_nnconv(res(i).x, l.filters, l.biases, ...
+                          'pad', l.pad, 'stride', l.stride, ...
+                          cudnn{:}) ;
 % %               elseif opts.branch12 && i == 18
 % %                  res = branch12Project(res(i).x, net, res);
 %               end
-              if opts.branch12 && i == 18
-                res = branch12Project(res(i).x, net, res);
-              elseif i<= 17 || i >=30 
-                res(i+1).x = vl_nnconv(single(res(i).x), single(l.filters), single(l.biases), ...
-                          'pad', l.pad, 'stride', l.stride, ...
-                          cudnn{:}) ;
-              end
+%               if opts.branch12 && i == 18
+%                 res = branch12Project_new(res(i).x, net, res, opts);
+%               elseif i<= 17 || i >= 30 %98 %30
+%                 res(i+1).x = vl_nnconv(single(res(i).x), single(l.filters), single(l.biases), ...
+%                           'pad', l.pad, 'stride', l.stride, ...
+%                           cudnn{:}) ;
+%               end
           end
 
 %         if isfield(l,'branch')
@@ -427,8 +428,12 @@ for i=1:n
       res(i+1).x = vl_nnsoftmaxloss(res(i).x, l.class) ;
     case 'relu'
       if isfield(l, 'leak'), leak = {'leak', l.leak} ; else leak = {} ; end
-%       leak = {'leak', 0.01};
-      res(i+1).x = vl_nnrelu(res(i).x,[],leak{:}) ;
+      leak = {'leak', 0.01};
+      if i == 30
+          res(i+1).x = vl_nnrelu(res(i).xx,[],leak{:}) ;
+      else
+          res(i+1).x = vl_nnrelu(res(i).x,[],leak{:}) ;
+      end
     case 'sigmoid'
       res(i+1).x = vl_nnsigmoid(res(i).x) ;
     case 'noffset'
@@ -589,7 +594,7 @@ if opts.addSupervision && doder
                 end
               case 'relu'
                 if isfield(l, 'leak'), leak = {'leak', l.leak} ; else leak = {} ; end
-    %           leak = {'leak', 0.01};
+%                    leak = {'leak', 0.01};
                 if ~isempty(res_n(i).x)
                   res_n(i).dzdx = vl_nnrelu(res_n(i).x, res_n(i+1).dzdx, leak{:}) ;
                 else
@@ -660,8 +665,8 @@ if doder
 %                             'pad', l.pad, 'stride', l.stride, ...
 %                             cudnn{:}) ;
 %             end
-            if opts.branch12 && i == 29
-                res = branch12Project_backprop(res(18).x, net, res);
+            if opts.branch12 && i == 29 %97%29
+                res = branch12Project_backprop(res(18).x, net, res, opts);
             end
 %             [res(i).dzdx, res(i).dzdw{1}, res(i).dzdw{2}] = ...
 %                 vl_nnconv(res(i).x, l.weights{1}, l.weights{2}, ...
@@ -696,8 +701,8 @@ if doder
 %                               cudnn{:}) ;
             else
                 [res(i).dzdx, res(i).dzdw{1}, res(i).dzdw{2}] = ...
-                    vl_nnconv(res(i).x, l.filters, l.biases, ...
-                              res(i+1).dzdx, ...
+                    vl_nnconv(single(res(i).x), single(l.filters), single(l.biases), ...
+                              single(res(i+1).dzdx), ...
                               'pad', l.pad, 'stride', l.stride, ...
                               cudnn{:}) ;
             end
@@ -871,9 +876,13 @@ if doder
         res(i).dzdx = vl_nnsoftmaxloss(res(i).x, l.class, res(i+1).dzdx) ;
       case 'relu'
         if isfield(l, 'leak'), leak = {'leak', l.leak} ; else leak = {} ; end
-%         leak = {'leak', 0.01};
+        leak = {'leak', 0.01};
         if ~isempty(res(i).x)
-          res(i).dzdx = vl_nnrelu(res(i).x, res(i+1).dzdx, leak{:}) ;
+            if i == 30
+                res(i).dzdx = vl_nnrelu(res(i).xx, res(i+1).dzdx, leak{:}) ;
+            else
+                res(i).dzdx = vl_nnrelu(res(i).x, res(i+1).dzdx, leak{:}) ;
+            end
         else
           % if res(i).x is empty, it has been optimized away, so we use this
           % hack (which works only for ReLU):

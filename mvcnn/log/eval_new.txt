@@ -125,3 +125,37 @@
 	AUC: 68.7645%
 	mAP (interpolated): 70.4799%
 	AUC (interpolated): 70.4799%
+(10-Nov-2015 23:27:18) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-caffe-alex-finetuned-ModelNet40v1-BS60_AUGnone
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.356%
+	accuracy (test): 81.6146%
+(10-Nov-2015 23:27:43) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-caffe-alex-finetuned-ModelNet40v1-BS60_AUGnone
+	layer: relu7
+	method: avgdesc
+	mAP: 49.1866%
+	AUC: 48.3487%
+	mAP (interpolated): 49.954%
+	AUC (interpolated): 49.954%
+(11-Nov-2015 13:36:30) -- Classification
+	c: 0.00390625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-caffe-alex-finetuned-ModelNet40v1-BS60_AUGnone_addDropout
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.0287%
+	accuracy (test): 81.9792%
+(11-Nov-2015 13:36:55) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-caffe-alex-finetuned-ModelNet40v1-BS60_AUGnone_addDropout
+	layer: relu7
+	method: avgdesc
+	mAP: 50.1607%
+	AUC: 49.3456%
+	mAP (interpolated): 50.9695%
+	AUC (interpolated): 50.9695%

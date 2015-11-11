@@ -1,0 +1,18 @@
+(06-Nov-2015 11:00:41) -- Classification
+	c: 0.0625 (cv=2)
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-fine_tunedvgg_add_12_branch_2048_after_fc6_LRw4_ave_pooling_normWeightedbackprop_leaky0.01_5epochs_rmfc7_MVconv5
+	layer: relu7
+	multiview: false
+	accuracy (train): 99.7172%
+	accuracy (test): 90.5%
+(06-Nov-2015 11:01:02) -- Retrieval
+	dataset: /media/DATA/mvcnn/ModelNet40v1
+	model: imagenet-vgg-m-finetuned-ModelNet40v1-BS60_AUGnone-finetuned-ModelNet40v1-fine_tunedvgg_add_12_branch_2048_after_fc6_LRw4_ave_pooling_normWeightedbackprop_leaky0.01_5epochs_rmfc7_MVconv5
+	layer: relu7
+	method: avgdesc
+	mAP: 68.542%
+	AUC: 67.7775%
+	mAP (interpolated): 69.6493%
+	AUC (interpolated): 69.6493%
+

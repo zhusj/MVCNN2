@@ -40,7 +40,7 @@ ex(end+1).trainOpts = struct(...
     'aug', 'none', ...
     'numEpochs', 15, ...
     'gpuMode', true, ...
-    'multiview', true, ...
+    'multiview', false, ...
     'viewpoolLoc', 'conv5', ...
     'learningRate', logspace(-3,-4,15), ...%[1e-4*ones(1,3) 3e-5*ones(1,3) 1e-5*ones(1,3) 1e-6*ones(1,3)], ...
     'momentum', 0.5, ...
@@ -121,8 +121,8 @@ for i=1:length(ex),
         trainOpts = ex(i).trainOpts;
 %         prefix = 'pose_addSup_12_views_10_epochs_add_dropout_fc6_fc7_feature_fusion_fc6+fc7(20+23)_Von_Mises_kernel_no_view_pooling';
 %         pose_addsup_12_views_10_epochs_add_dropoot_fc6_fc7_feature_fusion_fc6+fc7
-          prefix = 'vgg_with_max_view_pooling_addSup_conv5_Von_Mises_kernel_l2Normalization_15_epoch_log_-3_LR_no_val';
-%         prefix = sprintf('BS%d_AUG%s', trainOpts.batchSize, trainOpts.aug);
+%           prefix = 'vgg_with_max_view_pooling_addSup_conv5_Von_Mises_kernel_l2Normalization_15_epoch_log_-3_LR_no_val';
+        prefix = sprintf('BS%d_AUG%s', trainOpts.batchSize, trainOpts.aug);
         if isfield(trainOpts,'multiview') && trainOpts.multiview, 
             prefix = sprintf('%s_MV%s',prefix,trainOpts.viewpoolLoc);
         end
@@ -131,9 +131,9 @@ for i=1:length(ex),
 %         modelName = sprintf('%s-finetuned-%s-%s', trainOpts.baseModel, ...
 %             trainOpts.dataset, 'branch');
         trainOpts.prefix = prefix;
-        if ~exist(fullfile('/media/DATA/mvcnn','models',[modelName '.mat']),'file'),
+        if ~exist(fullfile('data','models',[modelName '.mat']),'file'),
             net = run_train(trainOpts.dataset, trainOpts);
-            save(fullfile('/media/DATA/mvcnn','models',[modelName '.mat']),'-struct','net');
+            save(fullfile('data','models',[modelName '.mat']),'-struct','net');
         end
         if isfield(ex(i),'featOpts'), ex(i).featOpts.model = modelName; end
     end
@@ -144,7 +144,7 @@ for i=1:length(ex),
     clear feats;
     if isfield(ex(i),'featOpts') && ~skipEval,
         featOpts = ex(i).featOpts;
-        featDir = fullfile('/media/DATA/mvcnn', 'features', ...
+        featDir = fullfile('data', 'features', ...
             [featOpts.dataset '-' featOpts.model '-' featOpts.aug], 'NORM0');
         if exist(fullfile(featDir, 'prob.mat'),'file'), % supposedly the last
             fprintf('Existing descriptors found at %s \n', featDir);

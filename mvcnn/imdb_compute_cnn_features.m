@@ -73,11 +73,11 @@ nImgs = numel(imdb.images.name);
 %                                                                CNN Model
 % -------------------------------------------------------------------------
 if isempty(net),
-    netFilePath = fullfile('/media/DATA/mvcnn','models', [modelName '.mat']);
+    netFilePath = fullfile('data','models', [modelName '.mat']);
     % download model if not found
     if ~exist(netFilePath,'file'),
         fprintf('Downloading model (%s) ...', modelName) ;
-        vl_xmkdir(fullfile('/media/DATA/mvcnn','models')) ;
+        vl_xmkdir(fullfile('data','models')) ;
         urlwrite(fullfile('http://maxwell.cs.umass.edu/deep-shape-data/models', ...
             [modelName '.mat']), netFilePath) ;
         fprintf(' done!\n');
@@ -132,19 +132,28 @@ res = vl_simplenn(net,im0);
 layers.name = {};
 layers.sizes = [];
 layers.index = [];
-for i = 1:length(net.layers), 
-    ires = i+1;
-    [sz1, sz2, sz3, sz4] = size(res(ires).x);
-    if sz1==1 && sz2==1 && sz4==1 && isfield(net.layers{i},'name'),
-        layers.name{end+1} = net.layers{i}.name;
-        layers.index(end+1) = ires;
-        layers.sizes(:,end+1) = [sz1;sz2;sz3];
-    end
-%     if sum(i == 13:15) ~= 0,
+% for i = 1:length(net.layers), 
+%     ires = i+1;
+%     [sz1, sz2, sz3, sz4] = size(res(ires).x);
+%     if sz1==1 && sz2==1 && sz4==1 && isfield(net.layers{i},'name'),
 %         layers.name{end+1} = net.layers{i}.name;
 %         layers.index(end+1) = ires;
 %         layers.sizes(:,end+1) = [sz1;sz2;sz3];
 %     end
+% %     if sum(i == 13:15) ~= 0,
+% %         layers.name{end+1} = net.layers{i}.name;
+% %         layers.index(end+1) = ires;
+% %         layers.sizes(:,end+1) = [sz1;sz2;sz3];
+% %     end
+% end
+for i = 15
+    ires = i+1;
+    [sz1, sz2, sz3, sz4] = size(res(ires).x);
+
+    layers.name{end+1} = net.layers{i}.name;
+    layers.index(end+1) = ires;
+    layers.sizes(:,end+1) = [sz1;sz2;sz3];
+
 end
 fprintf(' done!\n');
 
@@ -152,7 +161,7 @@ fprintf(' done!\n');
 %                                                   Load data if available
 % -------------------------------------------------------------------------
 % saving directory
-saveDir = fullfile('/media/DATA/mvcnn','features',sprintf('%s-%s-%s', ...
+saveDir = fullfile('data','features',sprintf('%s-%s-%s', ...
     imdbName, modelName, opts.aug));
 if ~opts.normalization, 
     expSuffix = 'NORM0';
@@ -241,7 +250,7 @@ parfor_progress(0);
 % -------------------------------------------------------------------------
 featCell = cell(1,numel(layers.name));
 for fi=1:numel(layers.name),
-    featCell{fi}.x = zeros(nImgs*nSubWins,layers.sizes(3,fi));
+%     featCell{fi}.x = zeros(nImgs*nSubWins,layers.sizes(3,fi));
     featCell{fi}.imdb = imdb;
     featCell{fi}.modelName = modelName;
     featCell{fi}.layerName = layers.name{fi};
@@ -259,8 +268,8 @@ for i=1:nImgs,
     if mod(i,500)==0, fprintf(' %4d/%4d\n', i,nImgs); end
     feat = load(fullfile(cacheDir, [num2str(i) '.mat']));
     for fi = 1:numel(layers.name),
-        featCell{fi}.x((i-1)*nSubWins+(1:nSubWins),:) = ...
-            squeeze(feat.(layers.name{fi}))';
+        featCell{fi}.x((i-1)*nSubWins+(1:nSubWins),:,:,:) = ...
+            squeeze(feat.(layers.name{fi}));
 %             squeeze(feat.(layers.name{fi}))';
     end
 end

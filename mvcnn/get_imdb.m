@@ -4,7 +4,7 @@ function [ imdb ] = get_imdb( datasetName, varargin )
 %   should be name of a directory under '/data'
 
 % datasetDir = fullfile('data',datasetName);
-datasetDir= fullfile('/media/DATA/mvcnn',datasetName);
+datasetDir= fullfile('data',datasetName);
 datasetFnName = ['setup_' datasetName];
 imdbPath = fullfile(datasetDir,'imdb.mat');
 
